@@ -1,0 +1,7 @@
+*.tar.gz
+.idea/
+collections/ansible_collections/
+.DS_Store
+.venv
+tests/output
+__pycache__/

@@ -1,0 +1,48 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+# This playbook deploys a CICS TS region to the z/OS instance defined in the
+# Ansible inventory
+#
+# Call as:
+#       ansible-playbook -i hosts provision.yml --extra-vars="instance_vars=<path to user vars>"
+#
+# where instance_vars specifies the path to the vars file which defines the configuration variables
+# which define the CICS region to be deployed.
+#
+- name: Provision a CICS TS region
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Validate the user inputs
+      ansible.builtin.include_role:
+        name: validate_input
+
+    - name: Fail if input validation was not successful
+      when: validation_error is defined
+      ansible.builtin.fail:
+        msg: "{{ validation_error }}"
+
+    - name: Apply Wazi Sandbox conventions
+      ansible.builtin.include_role:
+        name: wazi_sandbox_conventions
+        public: true
+
+    - name: Check if in reconciliation
+      ansible.builtin.include_role:
+        name: check_for_reconciliation
+      vars:
+        metadata_folder: "{{ DFH_ZFS_MOUNTPATH }}"
+
+    - name: Provision the region
+      when: not reconcile_run
+      block:
+        - name: Provision CICS region
+          ansible.builtin.include_role:
+            name: provision
+
+        - name: Update CICSTSRegion instance status to success
+          ansible.builtin.include_role:
+            name: update_instance_status
+          vars:
+            value: success

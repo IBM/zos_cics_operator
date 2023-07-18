@@ -1,0 +1,52 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Trim whitespace from the SYSID and APPLID
+  ansible.builtin.set_fact:
+    DFH_REGION_SYSID: "{{ DFH_REGION_SYSID | trim }}"
+    DFH_REGION_APPLID: "{{ DFH_REGION_APPLID | trim }}"
+
+- name: Check the APPLID is not empty
+  when: (DFH_REGION_APPLID | length) == 0
+  ansible.builtin.fail:
+    msg: APPLID must be specified and not empty
+
+- name: Check the APPLID is less than 8 characters long
+  when: (DFH_REGION_APPLID | length) > 8
+  ansible.builtin.fail:
+    msg: APPLID '{{ DFH_REGION_APPLID }}' must be no more than 8 characters long
+
+- name: Check the SYSID is not empty
+  when: (DFH_REGION_SYSID | length) == 0
+  ansible.builtin.fail:
+    msg: SYSID must be specified and not empty
+
+- name: Check the SYSID is less than 4 characters long
+  when: (DFH_REGION_SYSID | length) > 4
+  ansible.builtin.fail:
+    msg: SYSID '{{ DFH_REGION_SYSID }}' must be no more than 4 characters long
+
+- name: Check if there's a CICS region running with APPLID {{ DFH_REGION_APPLID }}
+  is_job_running:
+    job_name: "{{ DFH_REGION_APPLID }}"
+  register: cics_running
+  environment: "{{ z_environment_vars }}"
+
+- name: Fail if there are any active jobs with name {{ DFH_REGION_APPLID }}
+  ansible.builtin.fail:
+    msg: There is already a job running with name {{ DFH_REGION_APPLID }}
+  when:
+    - cics_running.running
+
+- name: Validate the CICS data sets
+  ansible.builtin.include_role:
+    name: zos_job_submit_template
+  vars:
+    zos_job_submit_template_src: CCICSCDS.j2
+
+- name: Validate the config properties specified
+  ansible.builtin.shell:
+    cmd: |
+      {{ lookup('template', 'validateConfigProperties.sh.j2') }}
+  changed_when: false
+  environment: "{{ z_environment_vars }}"

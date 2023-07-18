@@ -1,0 +1,24 @@
+//Z{{ DFH_REGION_SYSID }}DZF {{ JOB_CARD }}
+//*--------------------------------------------------------------------
+//* DEFINE A NEW ZFS
+//*--------------------------------------------------------------------
+//DEFINE   EXEC PGM=IDCAMS,REGION=6144K,MEMLIMIT=0M
+//SYSPRINT DD   SYSOUT=*
+//AMSDUMP  DD   SYSOUT=*
+//SYSIN    DD   *
+ DEFINE CLUSTER ( -
+   NAME({{ DFH_ZFS }}) -
+      LINEAR CYL(20 5) SHAREOPTIONS(2) -
+ )
+/*
+//*--------------------------------------------------------------------
+//* SET UP THE DATA SET FOR ZFS
+//*--------------------------------------------------------------------
+//FORMAT EXEC PGM=IOEAGFMT,REGION=0M,MEMLIMIT=0M,
+// PARM=('-aggregate {{ DFH_ZFS }} -compat')
+//SYSPRINT DD SYSOUT=H
+//STDOUT DD SYSOUT=H
+//STDERR DD SYSOUT=H
+//SYSUDUMP DD SYSOUT=H
+//CEEDUMP DD SYSOUT=H
+//*

@@ -1,0 +1,8 @@
+# Check CICS_INSTALL_OK exists in DFH_CICS_USSHOME
+ls {{ DFH_CICS_USSHOME }}/CICS_INSTALL_OK
+if [ $? -gt 0 ]; then
+  echo "ERROR: The value specified for the DFH_CICS_USSHOME property is invalid.  The script could not find the file {{ DFH_CICS_USSHOME }}/CICS_INSTALL_OK" >&2;
+  echo "Validate the value of the DFH_CICS_USSHOME property is appropriate for your environment." >&2;
+  echo "If it is incorrect, deprovision the failed instance in CB and modify the properties file before attempting to provision again." >&2;
+  exit "1";
+fi

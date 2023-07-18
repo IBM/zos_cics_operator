@@ -1,0 +1,13 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Create the CICS zFS data set
+  ansible.builtin.include_role:
+    name: zos_job_submit_template
+  vars:
+    zos_job_submit_template_src: ZFS.j2
+
+- name: Mount zFS
+  ansible.builtin.shell: true && {{ lookup('template', 'mountZFS.sh.j2') }}
+  changed_when: true
+  environment: "{{ z_environment_vars }}"

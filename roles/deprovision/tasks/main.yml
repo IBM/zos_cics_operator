@@ -1,0 +1,16 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Deprovision a CICS region
+  block:
+    - name: Stop CICS
+      ansible.builtin.include_role:
+        name: stop_cics
+
+    - name: Deprovision data sets
+      ansible.builtin.include_role:
+        name: deprovision_datasets
+
+    - name: Deprovision zFS
+      ansible.builtin.include_role:
+        name: deprovision_zfs

@@ -1,0 +1,45 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test
+  hosts: all
+
+  gather_facts: false
+
+  vars:
+    DFH_REGION_SYSID: TST
+    DFH_REGION_HLQ: IBMUSER.TESTRGS
+    DFH_ZFS_MOUNTPATH: /u/ibmuser/testrgs/{{ DFH_REGION_APPLID }}
+
+  tasks:
+    - name: Provision zFS with cleanup
+      block:
+        - name: Wazi Sandbox
+          ansible.builtin.include_role:
+            name: wazi_sandbox_conventions
+            public: true
+
+        - name: Provision zFS
+          ansible.builtin.include_role:
+            name: provision_zfs
+
+        - name: Check zFS
+          environment: "{{ z_environment_vars }}"
+          ansible.builtin.command: ls -al {{ DFH_ZFS_MOUNTPATH }}
+          changed_when: false
+          register: result
+
+        - name: Debug
+          ansible.builtin.debug:
+            msg: "{{ result.stdout }}"
+
+        - name: Debug
+          ansible.builtin.assert:
+            that:
+              - result.stdout is search("PROVISION_OK")
+              - result.stdout is search ("dfhconfig")
+
+      always:
+        - name: Deprovision zFS
+          ansible.builtin.include_role:
+            name: deprovision_zfs

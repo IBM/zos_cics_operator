@@ -1,0 +1,26 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test
+  hosts: all
+
+  gather_facts: false
+
+  vars:
+    DFH_REGION_APPLID: ZCICSXYZ
+    DFH_REGION_HLQ: IBMUSER.TESTRGS
+    DFH_REGION_SYSID: XYZ
+
+  tasks:
+    - name: Wazi Sandbox
+      ansible.builtin.include_role:
+        name: wazi_sandbox_conventions
+        public: true
+
+    - name: Debug
+      ansible.builtin.debug:
+        msg: "{{ DFH_CICS_LICENSE_DATASET }}"
+
+    - name: Include test_validate_success.yml
+      ansible.builtin.include_role:
+        name: validate

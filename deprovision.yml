@@ -1,0 +1,46 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+# This role deprovisions a CICS TS region from the z/OS instance defined in the Ansible inventory
+#
+# Call as:
+#       ansible-playbook -i hosts deprovision.yml --extra-vars="instance_vars=<path to user vars>"
+#
+# where instance_vars specifies the path to the vars file which defines the configuration variables
+# which define the CICS region to be removed.
+---
+- name: Deprovision a CICS TS region
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Validate the user inputs
+      ansible.builtin.include_role:
+        name: validate_input
+
+    - name: Apply Wazi Sandbox conventions
+      ansible.builtin.include_role:
+        name: wazi_sandbox_conventions
+        public: true
+
+    - name: Check if this is a duplicate request
+      when: k8s_managed
+      block:
+        - name: Get the CICSTSRegion instance info from Kubernetes
+          delegate_to: localhost
+          kubernetes.core.k8s_info:
+            api_version: '{{ k8s_cr_version }}'
+            kind: '{{ k8s_cr_kind }}'
+            name: '{{ ansible_operator_meta.name }}'
+            namespace: '{{ ansible_operator_meta.namespace }}'
+          register: cicstsregion_cr_instance
+
+        - name: Capture the CICSTSRegion run_result
+          ansible.builtin.set_fact:
+            run_result: "{{ cicstsregion_cr_instance.resources[0].status.run_result if 'run_result' in cicstsregion_cr_instance.resources[0].status else '' }}"
+
+    - name: Deprovision a CICS region
+      when:
+        - validation_error is not defined
+        - run_result != "duplicate"
+      ansible.builtin.include_role:
+        name: deprovision

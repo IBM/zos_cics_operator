@@ -1,0 +1,130 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Fetch the CR info for the current run
+  when: k8s_managed
+  block:
+    - name: Debug the k8s vars
+      ansible.builtin.debug:
+        msg:
+          - '{{ k8s_cr_version }}'
+          - '{{ k8s_cr_kind }}'
+          - '{{ ansible_operator_meta.namespace }}'
+          - '{{ ansible_operator_meta.name }}'
+        verbosity: 1
+
+    - name: Get the CICSTSRegion instance info from Kubernetes
+      delegate_to: localhost
+      kubernetes.core.k8s_info:
+        api_version: '{{ k8s_cr_version }}'
+        kind: '{{ k8s_cr_kind }}'
+        name: '{{ ansible_operator_meta.name }}'
+        namespace: '{{ ansible_operator_meta.namespace }}'
+      register: cicstsregion_cr_instance
+
+    - name: Capture the CICSTSRegion UID
+      ansible.builtin.set_fact:
+        cr_uid: "{{ cicstsregion_cr_instance.resources[0].metadata.uid }}"
+        run_result: "{{ cicstsregion_cr_instance.resources[0].status.run_result if 'run_result' in cicstsregion_cr_instance.resources[0].status else '' }}"
+    - name: Debug the CR UID
+      ansible.builtin.debug:
+        msg: UID for the current CR is {{ cr_uid }}
+        verbosity: 1
+    - name: Debug run_result
+      ansible.builtin.debug:
+        msg: The run_result status for the current CR is {{ run_result }}
+        verbosity: 1
+
+- name: Set reconcile to false
+  ansible.builtin.set_fact:
+    reconcile_run: false
+
+- name: Get or write the metadata file for the current APPLID
+  block:
+    - name: Set the path for the metadata file
+      ansible.builtin.set_fact:
+        metadata_filepath: "{{ metadata_folder }}/cicstsregion_metadata"
+
+    - name: Lookup the metadata file for the current APPLID
+      ansible.builtin.stat:
+        path: '{{ metadata_filepath }}'
+      register: cicstsregion_metadata_file
+
+    - name: Check if the metadata file exists
+      ansible.builtin.set_fact:
+        metadata_exists: "{{ cicstsregion_metadata_file.stat.exists | bool }}"
+
+    - name: Debug metadata_exists
+      ansible.builtin.debug:
+        msg: metadata_exists = {{ metadata_exists }}
+        verbosity: 1
+
+    - name: Create the metadata directory if it does not exist
+      ansible.builtin.file:
+        path: '{{ metadata_folder }}'
+        state: directory
+        mode: "600"
+
+    - name: Write the metadata file if it doesn't exist already
+      when: not metadata_exists
+      ansible.builtin.copy:
+        content: '{{ cr_uid }}'
+        dest: '{{ metadata_filepath }}'
+        mode: "600"
+
+    - name: Fetch the UID value found in the metadata file
+      ansible.builtin.slurp:
+        src: '{{ metadata_filepath }}'
+      register: cicstsregion_metadata
+
+    - name: Debug the UID from disk
+      ansible.builtin.debug:
+        msg: "{{ cicstsregion_metadata['content'] | b64decode }}"
+        verbosity: 1
+
+    - name: Check if the UID matches
+      ansible.builtin.set_fact:
+        uid_matches: "{{ (cr_uid == (cicstsregion_metadata['content'] | b64decode | trim)) | bool }}"
+
+    - name: Debug uid_matches
+      ansible.builtin.debug:
+        msg: uid_matches = {{ uid_matches }}
+        verbosity: 1
+
+- name: Check if in reconcile, a re-run or duplicate
+  block:
+    - name: Fail if the UID of the CR doesn't match the metadata file
+      when: not uid_matches
+      block:
+        - name: Update the CICSTSRegion instance status
+          ansible.builtin.include_role:
+            name: update_instance_status
+          vars:
+            value: 'duplicate'
+        - name: Fail the playbook
+          ansible.builtin.fail:
+            msg: Duplicate CICSTSRegion request for APPLID
+
+    - name: If the UID matches and the CR status is success, we are in a reconcile loop
+      when:
+        - uid_matches
+        - run_result is defined
+        - run_result=="success"
+      block:
+        - name: Set reconcile_run to true
+          ansible.builtin.set_fact:
+            reconcile_run: true
+        - name: Do nothing in reconcile
+          ansible.builtin.debug:
+            msg: "We are in a reconcile loop"
+            verbosity: 1
+
+    - name: If the UID matches but the CR has no status field, we are in a re-run of an incomplete provision
+      when:
+        - metadata_exists
+        - uid_matches
+        - (run_result is not defined or run_result=='')
+      block:
+        - name: Re-run of the provision
+          ansible.builtin.debug:
+            msg: "This is a re-run of an incomplete provision. If it fails, you might need to delete and create the instance again"

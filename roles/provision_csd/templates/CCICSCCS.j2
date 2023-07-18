@@ -1,0 +1,60 @@
+//Z{{ DFH_REGION_SYSID }}CCS {{ JOB_CARD }}
+//DEFINE    EXEC PGM=IDCAMS,REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+ /*                           */
+ /* DEFINE THE CSD            */
+ /*                           */
+   DEFINE CLUSTER(NAME({{ DFH_DFHCSD }}) -
+     IXD -
+     REC(12000)-
+     RECORDSIZE(200 2000)-
+     FREESPACE(5 5)-
+     SHR(2)) -
+    DATA(NAME({{ DFH_DFHCSD }}.DATA) -
+     UNIQUE -
+     KEYS(22 0))-
+    INDEX(NAME({{ DFH_DFHCSD }}.INDEX) -
+     UNIQUE)
+/*
+//*********************************************************************
+//INITCSD  EXEC PGM=DFHCSDUP,REGION=1M,MEMLIMIT=0M
+//*
+/*                               */
+/* INITIALISE THE CSD            */
+/*                               */
+//STEPLIB  DD DSN={{ DFH_CICS_HLQ }}.SDFHLOAD,DISP=SHR
+//DFHCSD   DD DSN={{ DFH_DFHCSD }},DISP=SHR
+//SYSUT1   DD UNIT={{ DFH_ZOS_VSAM_UNIT }},SPACE=(1024,(100,100))
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+ INITIALIZE
+
+ ADD GROUP(DFHTERMC) LIST({{ DFH_REGION_CSDLIST }})
+
+ DEFINE JOURNALMODEL(DFHLOG)
+     GROUP({{ DFH_REGION_CSDGROUP }})
+     DESCRIPTION(Primary CICS system log)
+     JOURNALNAME(DFHLOG)
+     TYPE(DUMMY)
+
+ DEFINE JOURNALMODEL(DFHSHUNT)
+     GROUP({{ DFH_REGION_CSDGROUP }})
+     DESCRIPTION(Secondary CICS system log+shunted tasks)
+     JOURNALNAME(DFHSHUNT)
+     TYPE(DUMMY)
+
+ DEFINE JOURNALMODEL(DFHJ) GROUP({{ DFH_REGION_CSDGROUP }})
+     DESCRIPTION(Model for CICS user journals)
+     JOURNALNAME(DFHJ*)
+     TYPE(DUMMY)
+
+DEFINE JOURNALMODEL(DFHLGLOG)
+     GROUP({{ DFH_REGION_CSDGROUP }})
+     DESCRIPTION(Dummy Log of logs)
+     JOURNALNAME(DFHLGLOG)
+     TYPE(DUMMY)
+
+ADD GROUP({{ DFH_REGION_CSDGROUP }}) LIST({{ DFH_REGION_CSDLIST }})
+/*
+//*

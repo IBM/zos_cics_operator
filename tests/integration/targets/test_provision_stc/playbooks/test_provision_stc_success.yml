@@ -1,0 +1,67 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test provision STC
+  hosts: all
+
+  gather_facts: false
+
+  vars:
+    DFH_REGION_SYSID: TST
+    DFH_REGION_APPLID: ZCICSTST
+    output: "{{ DFH_ZOS_STCJOBS }}({{ DFH_REGION_APPLID }})"
+    DFH_REGION_CSDLIST: L
+    DFH_REGION_HLQ: IBMUSER.TESTRGS
+    DFH_ZFS_MOUNTPATH: /u/ibmuser/testrgs/{{ DFH_REGION_APPLID }}
+
+  tasks:
+    - name: Wazi Sandbox
+      ansible.builtin.include_role:
+        name: wazi_sandbox_conventions
+        public: true
+
+    - name: Create temp file for output
+      ansible.builtin.tempfile:
+        state: file
+      register: result
+      delegate_to: localhost
+
+    - name: Create STC with cleanup
+      block:
+        - name: Provision STC
+          ansible.builtin.include_role:
+            name: provision_stc
+
+        - name: Check STC
+          environment: "{{ z_environment_vars }}"
+          ibm.ibm_zos_core.zos_fetch:
+            src: "{{ output }}"
+            dest: "{{ result.path }}"
+            flat: true
+          changed_when: false
+
+        - name: Diff
+          ansible.builtin.command: diff test_provision_stc_success-expected.txt {{ result.path }}
+          delegate_to: localhost
+          changed_when: false
+          register: diff_out
+
+        - name: Debug
+          ansible.builtin.debug:
+            msg: "{{ lookup('file', result.path) }}"
+          delegate_to: localhost
+
+      always:
+        - name: Delete output tempfile for STC
+          ansible.builtin.file:
+            state: absent
+            path: "{{ result.path }}"
+          delegate_to: localhost
+
+        - name: Delete STC member
+          environment: "{{ z_environment_vars }}"
+          ibm.ibm_zos_core.zos_data_set:
+            name: "{{ output }}"
+            type: MEMBER
+            state: absent
+            force: true

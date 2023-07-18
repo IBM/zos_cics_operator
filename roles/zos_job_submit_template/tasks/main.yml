@@ -1,0 +1,35 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: "Create a temporary file for job template {{ zos_job_submit_template_src }}"
+  ansible.builtin.tempfile:
+    state: file
+  register: templated_job
+  delegate_to: localhost
+
+- name: "Apply the job template {{ zos_job_submit_template_src }}"
+  ansible.builtin.template:
+    src: "{{ zos_job_submit_template_src }}"
+    dest: "{{ templated_job.path }}"
+    mode: "600"
+  delegate_to: localhost
+
+- name: "Submit JCL for the job {{ zos_job_submit_template_src }}"
+  environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_job_submit:
+    src: "{{ templated_job.path }}"
+    location: LOCAL
+    wait: true
+    max_rc: "{{ zos_job_submit_template_max_rc }}"
+    wait_time_s: "{{ zos_job_submit_template_wait_time_s }}"
+  register: job_submit_response
+
+- name: Set response fact for {{ zos_job_submit_template_src | basename | splitext | first }}
+  ansible.builtin.set_fact:
+    "{{ zos_job_submit_template_src | basename | splitext | first }}_response": "{{ job_submit_response }}"
+
+- name: "Delete the templated job temporary file for {{ zos_job_submit_template_src }}"
+  ansible.builtin.file:
+    state: absent
+    path: "{{ templated_job.path }}"
+  delegate_to: localhost

@@ -1,0 +1,1 @@
+plugins/modules/is_job_running.py validate-modules:missing-gplv3-license # Licence is Apache-2.0

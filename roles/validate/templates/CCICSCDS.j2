@@ -1,0 +1,63 @@
+//Z{{ DFH_REGION_SYSID }}CDS {{ JOB_CARD }}
+//* Validate that the CICS install data sets can be found. This step
+//* only checks for the existence of one of the CICS data sets -
+//* SDFHLOAD, but others are required to provision a CICS region so
+//* you must ensure that all the standard CICS install data sets can be
+//* found using the DFH_CICS_HLQ property.
+//CICSHLQ EXEC PGM=IDCAMS,REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('{{ DFH_CICS_HLQ }}.SDFHLOAD')
+/*
+//*
+//* If a value is set for the DFH_CICS_LICENSE_DATASET property, then
+//* validate that the property names an existing data set. The
+//* activation module in the data set is required for CICS TS V5.2
+//* and above.
+//CICSLIC EXEC PGM=IDCAMS,REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('{{ DFH_CICS_LICENSE_DATASET }}')
+/*
+//*
+//* Validate that the LE data sets can be found, by checking for the
+//* existence of the SCEECICS data set using the high level qualifier
+//* specified by the DFH_LE_HLQ property in the properties file.
+//LEHLQ   EXEC PGM=IDCAMS,REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('{{ DFH_LE_HLQ }}.SCEECICS')
+/*
+//* To ensure that the CICS region can be successfully provisioned,
+//* check for the existence of a data set we would expect to exist
+//* if there are already CICS data sets provisioned using the same
+//* data set name. We do not check for every CICS data set. We just
+//* check for one on the assumption they will all exist or none
+//* will exist.
+//*
+//* If data sets already exist, the provision will fail as a
+//* pre-req for provision is a clean environment into which
+//* to provision. It is possible that a previous CICS region
+//* was provisioned, but not correctly deprovisioned, which
+//* can leave data sets behind. It is recommended that a
+//* provisioned CICS region is always deprovisioned which
+//* tidies up the data sets.
+//INUSE   EXEC PGM=IDCAMS,COND=(4,LT),REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('{{ DFH_DFHDMPA }}')
+  IF LASTCC EQ 0 THEN DO
+   SET MAXCC = 8
+   END
+  ELSE IF LASTCC EQ 4 THEN DO
+   SET MAXCC = 0
+   END
+/*
+//* Validate the data set specified as STCJOBS into which the JCL
+//* for the CICS regions started task is generated.
+//STCJTST   EXEC PGM=IDCAMS,COND=(4,LT,INUSE),REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//DD1      DD DISP=SHR,DSN={{ DFH_ZOS_STCJOBS }}
+//SYSIN    DD *
+  SET MAXCC = 0
+/*

@@ -1,0 +1,29 @@
+//Z{{ DFH_REGION_SYSID }}GCD {{ JOB_CARD }}
+//DEFINE    EXEC PGM=IDCAMS,REGION=1M,MEMLIMIT=0M
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+ /*                              */
+ /* DEFINE A CICS GLOBAL CATALOG */
+ /*                              */
+ DEFINE CLUSTER(NAME({{ DFH_DFHGCD }})-
+          INDEXED -
+          CYL(3 1)-
+          SHR(2)-
+          FREESPACE(10 10)-
+          REUSE) -
+        DATA(NAME({{ DFH_DFHGCD }}.DATA)-
+          RECORDSIZE(4089,32760)-
+          CISZ(32768)-
+          KEYS(52 0)) -
+       INDEX(NAME({{ DFH_DFHGCD }}.INDEX))
+/*
+//*
+//INITGCD   EXEC PGM=DFHRMUTL,REGION=1M,MEMLIMIT=0M
+//STEPLIB  DD DSN={{ DFH_CICS_HLQ }}.SDFHLOAD,DISP=SHR
+//SYSPRINT  DD SYSOUT=*
+//SYSUDUMP  DD SYSOUT=*
+//DFHGCD DD DSN={{ DFH_DFHGCD }},DISP=SHR
+//SYSIN     DD *
+ SET_AUTO_START=AUTOINIT
+/*
+//*

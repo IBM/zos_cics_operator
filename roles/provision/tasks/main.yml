@@ -1,0 +1,35 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Perform validation of config options and data sets
+  ansible.builtin.include_role:
+    name: validate
+  when: VALIDATE_PARAMETERS
+
+- name: Create and initialize a new CICS CSD
+  ansible.builtin.include_role:
+    name: provision_csd
+
+- name: Create and initialize a new CICS GCD
+  ansible.builtin.include_role:
+    name: provision_gcd
+
+- name: Create and initialize a new CICS LCD
+  ansible.builtin.include_role:
+    name: provision_lcd
+
+- name: Create the other CICS data sets
+  ansible.builtin.include_role:
+    name: provision_other
+
+- name: Create the region zFS
+  ansible.builtin.include_role:
+    name: provision_zfs
+
+- name: Create the started task job
+  ansible.builtin.include_role:
+    name: provision_stc
+
+- name: Start CICS
+  ansible.builtin.include_role:
+    name: start_cics

@@ -1,0 +1,7 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+VALIDATE_PARAMETERS: true
+DFH_REGION_CSDLIST: L
+DFH_REGION_CSDGROUP: G
+DFH_ZOS_VSAM_UNIT: SYSDA

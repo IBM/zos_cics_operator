@@ -1,0 +1,80 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Is CICS running for APPLID {{ DFH_REGION_APPLID }}
+  environment: "{{ z_environment_vars }}"
+  is_job_running:
+    job_name: "{{ DFH_REGION_APPLID }}"
+  register: is_cics_running1
+
+- name: Log the CICS running status
+  ansible.builtin.debug:
+    msg: "{{ 'CICS is running, attempting to stop CICS' if is_cics_running1.running else 'CICS is already stopped' }}"
+
+- name: Stop CICS
+  when: is_cics_running1.running
+  block:
+    - name: Run CEMT PERFORM SHUTDOWN
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_core.zos_operator:
+        cmd: MODIFY {{ DFH_REGION_APPLID }},CEMT PERFORM SHUTDOWN
+
+    - name: Wait to see if SHUTDOWN was successful for APPLID {{ DFH_REGION_APPLID }}
+      environment: "{{ z_environment_vars }}"
+      is_job_running:
+        job_name: "{{ DFH_REGION_APPLID }}"
+      register: is_cics_running2
+      retries: "{{ stop_cics_retries }}"
+      delay: 5
+      until: not is_cics_running2.running
+      # CICS is still running and we didn't run out of retries
+      failed_when:
+        - is_cics_running2.running
+        - is_cics_running2.attempts < stop_cics_retries
+
+    - name: Stop CICS immediately
+      when: is_cics_running2.running
+      block:
+        - name: Run CEMT PERFORM SHUTDOWN IMMEDIATE
+          environment: "{{ z_environment_vars }}"
+          ibm.ibm_zos_core.zos_operator:
+            cmd: MODIFY {{ DFH_REGION_APPLID }},CEMT PERFORM SHUTDOWN IMMEDIATE
+
+        - name: Wait to see if SHUTDOWN IMMEDIATE was successful for APPLID {{ DFH_REGION_APPLID }}
+          environment: "{{ z_environment_vars }}"
+          is_job_running:
+            job_name: "{{ DFH_REGION_APPLID }}"
+          register: is_cics_running3
+          retries: "{{ stop_cics_retries }}"
+          delay: 5
+          until: not is_cics_running3.running
+          # CICS is still running and we didn't run out of retries
+          failed_when:
+            - is_cics_running3.running
+            - is_cics_running3.attempts < stop_cics_retries
+
+        - name: CANCEL the CICS job
+          when: is_cics_running3.running
+          block:
+            - name: Cancel the CICS job
+              environment: "{{ z_environment_vars }}"
+              ibm.ibm_zos_core.zos_operator:
+                cmd: CANCEL {{ DFH_REGION_APPLID }}
+
+            - name: Wait to see if CANCEL was successful for APPLID {{ DFH_REGION_APPLID }}
+              environment: "{{ z_environment_vars }}"
+              is_job_running:
+                job_name: "{{ DFH_REGION_APPLID }}"
+              register: is_cics_running4
+              retries: "{{ stop_cics_retries }}"
+              delay: 5
+              until: not is_cics_running4.running
+              # CICS is still running and we didn't run out of retries
+              failed_when:
+                - is_cics_running4.running
+                - is_cics_running4.attempts < stop_cics_retries
+
+            - name: Fail if CICS is still running
+              when: is_cics_running4.running
+              ansible.builtin.fail:
+                msg: Failed to stop CICS region

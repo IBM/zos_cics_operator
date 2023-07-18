@@ -1,0 +1,42 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test reconcile fails if a separate instance existing CSD
+  hosts: all
+
+  gather_facts: false
+
+  vars:
+    metadata_folder: /u/ibmuser/testrgs/ZCICSRCS
+
+
+  tasks:
+    - name: Check reconciliation with cleanup
+      block:
+        - name: Wazi Sandbox
+          ansible.builtin.include_role:
+            name: wazi_sandbox_conventions
+            public: true
+
+        - name: Setup cr uid and disable k8s_managed
+          ansible.builtin.set_fact:
+            cr_uid: "123456789"
+            k8s_managed: false
+
+        - name: Check not in reconcile first time around
+          ansible.builtin.include_role:
+            name: check_for_reconciliation
+
+        - name: Change cr uid
+          ansible.builtin.set_fact:
+            cr_uid: "987654321"
+
+        - name: Check reconcile fails when from a different CR instance - duplicate job
+          ansible.builtin.include_role:
+            name: check_for_reconciliation
+
+      always:
+        - name: Clean up metadata file
+          ansible.builtin.file:
+            path: "{{ metadata_filepath }}"
+            state: absent

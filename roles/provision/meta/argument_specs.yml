@@ -1,0 +1,36 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+argument_specs:
+  main:
+    short_description: Provision a CICS region
+    options:
+      z_environment_vars:
+        type: dict
+        required: true
+      DFH_REGION_SYSID:
+        type: str
+        required: true
+      DFH_REGION_DFLTUSER:
+        type: str
+        required: true
+      DFH_LE_HLQ:
+        type: str
+        required: false
+        default: CEE
+      DFH_ZOS_VSAM_UNIT:
+        type: str
+        required: false
+        default: SYSDA
+      VALIDATE_PARAMETERS:
+        type: bool
+        required: false
+        default: true
+      DFH_REGION_CSDLIST:
+        type: str
+        required: false
+        default: L
+      DFH_REGION_CSDGROUP:
+        type: str
+        required: false
+        default: G

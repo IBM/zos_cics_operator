@@ -1,0 +1,15 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Update the CR instance run status
+  when: k8s_managed
+  block:
+    - name: Update the CR instance run status with {{ value }}
+      delegate_to: localhost
+      operator_sdk.util.k8s_status:
+        api_version: '{{ k8s_cr_version }}'
+        kind: '{{ k8s_cr_kind }}'
+        name: '{{ ansible_operator_meta.name }}'
+        namespace: '{{ ansible_operator_meta.namespace }}'
+        status:
+          run_result: '{{ value }}'

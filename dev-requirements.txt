@@ -1,0 +1,5 @@
+-r collections/requirements.txt
+ansible-core
+ansible-lint
+pytest==7.4.0
+pytest-xdist==1.34.0
