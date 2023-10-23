@@ -10,7 +10,7 @@ namespace: ibm
 name: zos_cics_operator
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 1.0.0
+version: 1.0.1
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -58,18 +58,21 @@ issues: https://github.com/IBM/zos_cics_operator/issues
 # uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
 # and '.git' are always filtered
 build_ignore:
+  - .jenkins
+  - Jenkinsfile
   - .devcontainer
   - .venv
   - collections/ansible_collections
+  - ibm-zos_cics_operator-*.tar.gz
+  - inventories
+  - .vscode
+  - .utils
+  - .DS_Store
+  - .whitesource
+  - release_os.py
+  # Items beyond here will be included in the OS repo
+  - OS-INCLUDE
   - .gitignore
   - dev-requirements.txt
-  - ibm-zos_cics_operator-*.tar.gz
   - tests
-  - inventories
-  - .DS_Store
-  - .jenkins
-  - Jenkinsfile
-  - .vscode
-  - .release-it.yml
-  - .utils
-  - .whitesource
+  - collections-requirements.txt

@@ -24,6 +24,7 @@
     force: true
 
 - name: Delete the templated job tempfile for the STC
+  environment: "{{ z_environment_vars }}"
   ansible.builtin.file:
     state: absent
     path: "{{ templated_stc.path }}"

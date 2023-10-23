@@ -2,6 +2,7 @@
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Check if the zFS filesystem is still mounted
+  environment: "{{ z_environment_vars }}"
   ansible.builtin.stat:
     path: '{{ DFH_ZFS_MOUNTPATH }}/PROVISION_OK'
   register: mountpoint_exists

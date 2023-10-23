@@ -29,6 +29,7 @@
     "{{ zos_job_submit_template_src | basename | splitext | first }}_response": "{{ job_submit_response }}"
 
 - name: "Delete the templated job temporary file for {{ zos_job_submit_template_src }}"
+  environment: "{{ z_environment_vars }}"
   ansible.builtin.file:
     state: absent
     path: "{{ templated_job.path }}"

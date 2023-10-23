@@ -42,5 +42,13 @@
       when:
         - validation_error is not defined
         - run_result != "duplicate"
-      ansible.builtin.include_role:
-        name: deprovision
+      block:
+        - name: Deprovision region {{ DFH_REGION_APPLID }}
+          ansible.builtin.include_role:
+            name: deprovision
+
+        - name: Remove metadata file
+          environment: "{{ z_environment_vars }}"
+          ansible.builtin.file:
+            path: "{{ DFH_ZFS_METADATA }}/{{ DFH_REGION_APPLID }}"
+            state: absent

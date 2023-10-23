@@ -7,8 +7,8 @@
   gather_facts: false
 
   vars:
-    metadata_folder: /u/ibmuser/testrgs/ZCICSRCS
-
+    metadata_folder: /u/ibmuser/testrgs/metadata
+    DFH_REGION_SYSID: TST
 
   tasks:
     - name: Check reconciliation with cleanup
@@ -37,6 +37,7 @@
 
       always:
         - name: Clean up metadata file
+          environment: "{{ z_environment_vars }}"
           ansible.builtin.file:
             path: "{{ metadata_filepath }}"
             state: absent

@@ -4,14 +4,11 @@
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 from ansible.plugins.action import ActionBase
 
-# The files
-#   roles/start_cics/actions_plugins/is_job_running.py
-#   roles/stop_cics/actions_plugins/is_job_running.py
-#   roles/validate/actions_plugins/is_job_running.py
+# All instances of this role must be identical.  Cloud broker does not execute playbooks
+# in this collection using FQCN, so as far as Ansible in CB is concerned, we're
+# executing an ad-hoc playbook.  That means that Ansible will search for referenced
+# assets differently.
 #
-# Must be identical.  Cloud broker does not execute playbooks in this collection
-# using FQCN, so as far as Ansible in CB is concerned, we're executing an ad-hoc
-# playbook.  That means that Ansible will search for referenced assets differently.
 # In this case in CB, Ansible will look for action plugins relative to the
 # playbook in an action_plugins directory, rather than the collection-specific
 # location plugins/actions, relative to the collection root.  In order to make this
@@ -20,7 +17,6 @@ from ansible.plugins.action import ActionBase
 #
 # These files must be identical and tests/unit/test_is_job_running_duplicated.py
 # verifies this constraint.
-#
 
 
 class ActionModule(ActionBase):
