@@ -43,9 +43,10 @@
   block:
     - name: Set the path for the metadata file
       ansible.builtin.set_fact:
-        metadata_filepath: "{{ metadata_folder }}/cicstsregion_metadata"
+        metadata_filepath: "{{ metadata_folder }}/{{ DFH_REGION_APPLID }}"
 
     - name: Lookup the metadata file for the current APPLID
+      environment: "{{ z_environment_vars }}"
       ansible.builtin.stat:
         path: '{{ metadata_filepath }}'
       register: cicstsregion_metadata_file
@@ -60,12 +61,14 @@
         verbosity: 1
 
     - name: Create the metadata directory if it does not exist
+      environment: "{{ z_environment_vars }}"
       ansible.builtin.file:
         path: '{{ metadata_folder }}'
         state: directory
         mode: "600"
 
     - name: Write the metadata file if it doesn't exist already
+      environment: "{{ z_environment_vars }}"
       when: not metadata_exists
       ansible.builtin.copy:
         content: '{{ cr_uid }}'
@@ -73,6 +76,7 @@
         mode: "600"
 
     - name: Fetch the UID value found in the metadata file
+      environment: "{{ z_environment_vars }}"
       ansible.builtin.slurp:
         src: '{{ metadata_filepath }}'
       register: cicstsregion_metadata

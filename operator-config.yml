@@ -3,7 +3,7 @@
 name: zos-cics-ts-operator
 displayName: IBM Z and Cloud Modernization Stack - CICS TS Operator
 domain: ibm
-version: 1.0.0
+version: 1.0.1
 description: >-
   # IBM Z and Cloud Modernization Stack - CICS TS Operator
     The **IBM CICS TS Operator Collection** provides automation around provisioning CICS Transaction Server for z/OS to one or more Wazi Sandbox instances and

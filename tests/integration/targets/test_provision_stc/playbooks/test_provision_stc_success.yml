@@ -53,6 +53,7 @@
 
       always:
         - name: Delete output tempfile for STC
+          environment: "{{ z_environment_vars }}"
           ansible.builtin.file:
             state: absent
             path: "{{ result.path }}"

@@ -32,7 +32,7 @@
       ansible.builtin.include_role:
         name: check_for_reconciliation
       vars:
-        metadata_folder: "{{ DFH_ZFS_MOUNTPATH }}"
+        metadata_folder: "{{ DFH_ZFS_METADATA }}"
 
     - name: Provision the region
       when: not reconcile_run

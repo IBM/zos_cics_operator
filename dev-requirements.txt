@@ -1,5 +1,6 @@
 -r collections/requirements.txt
-ansible-core
-ansible-lint
+ansible-core==2.15.5
+ansible-lint==6.21.1
 pytest==7.4.0
 pytest-xdist==1.34.0
+pylint==3.0.1
