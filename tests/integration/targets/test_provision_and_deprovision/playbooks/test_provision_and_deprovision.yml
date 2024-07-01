@@ -1,0 +1,130 @@
+# (c) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test Provision and Deprovision a unmanaged CICS Region
+  hosts: all
+  gather_facts: false
+  environment: "{{ z_environment_vars }}"
+
+  vars:
+    DFH_REGION_SYSID: TS4
+    # Set port to 0 to default to starting an unmanged region
+    DFH_CMCI_PORT: 0
+  tasks:
+    - name: Provision CICS
+      block:
+        - name: Conventions
+          ansible.builtin.include_role:
+            name: conventions
+            public: true
+
+        - name: Provision CICS region
+          ansible.builtin.include_role:
+            name: provision
+
+        - name: Check data sets have been created
+          ansible.builtin.import_tasks: ./check_region_data_sets.yml
+          vars:
+            should_exist: true
+
+        - name: Get CICS region status
+          ibm.ibm_zos_core.zos_job_query:
+            job_name: "{{ DFH_REGION_APPLID | upper }}"
+          register: running_result
+
+        - name: Assert CICS started
+          ansible.builtin.assert:
+            that:
+              - running_result.jobs | selectattr("ret_code", 'equalto', None) | list | length > 0
+              - running_result.failed != True
+            fail_msg: "CICS Region did not start successfully"
+
+        - name: Deprovision CICS
+          ansible.builtin.include_role:
+            name: deprovision
+
+        - name: Check data sets have been deleted
+          ansible.builtin.import_tasks: ./check_region_data_sets.yml
+          vars:
+            should_exist: false
+
+        - name: Get CICS region status
+          ibm.ibm_zos_core.zos_job_query:
+            job_name: "{{ DFH_REGION_APPLID | upper }}"
+          register: running_result
+
+        - name: Assert CICS stopped
+          ansible.builtin.assert:
+            that:
+              - running_result.jobs | selectattr("ret_code", 'equalto', None) | list | length == 0
+              - running_result.failed != True
+            fail_msg: "CICS Region did not stop successfully"
+
+      always:
+        - name: Execute a command to delete job
+          ansible.builtin.command:
+            cmd: "jcan P {{ DFH_REGION_APPLID | upper }} //"
+          when: running_result is defined
+          register: delete_result
+          changed_when: delete_result.rc == 0
+
+        - name: Ensure CICS data sets have been deleted
+          ibm.ibm_zos_core.zos_mvs_raw:
+            program_name: idcams
+            auth: true
+            dds:
+              - dd_output:
+                  dd_name: sysprint
+                  return_content:
+                    type: text
+              - dd_input:
+                  dd_name: sysin
+                  content:
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHSTART')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHSTART"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHGCD')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHGCD"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHLCD')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHLCD"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHCSD')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHCSD"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHTEMP')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHTEMP"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHINTRA')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHINTRA"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHLRQ')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHLRQ"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHAUXT')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHAUXT"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHBUXT')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHBUXT"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHDMPA')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHDMPA"
+                    - " END"
+                    - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.DFHDMPB')"
+                    - " IF LASTCC = 0 THEN DO"
+                    - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHDMPB"
+                    - " END"
+
+        - name: Deprovision zFS
+          ansible.builtin.include_role:
+            name: deprovision_zfs

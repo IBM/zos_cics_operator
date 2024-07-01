@@ -1,16 +1,10 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 argument_specs:
   main:
     options:
-      z_environment_vars:
-        type: dict
-        required: true
       DFH_REGION_SYSID:
-        type: str
-        required: true
-      JOB_CARD:
         type: str
         required: true
       DFH_REGION_APPLID:
@@ -19,22 +13,19 @@ argument_specs:
       DFH_REGION_HLQ:
         type: str
         required: true
-      DFH_DFHDMPA:
-        type: str
-        required: true
       DFH_CICS_HLQ:
         type: str
         required: true
-      DFH_CICS_LICENSE_DATASET:
+      DFH_CPSM_HLQ:
+        type: str
+        required: true
+      DFH_CMCI_PORT:
+        type: int
+        required: true
+      DFH_CICS_LICENSE_DATA_SET:
         type: str
         required: true
       DFH_LE_HLQ:
-        type: str
-        required: true
-      DFH_ZOS_VSAM_UNIT:
-        type: str
-        required: true
-      DFH_ZOS_STCJOBS:
         type: str
         required: true
       DFH_CICS_USSHOME:

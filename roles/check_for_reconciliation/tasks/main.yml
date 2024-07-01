@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Fetch the CR info for the current run
@@ -26,6 +26,7 @@
       ansible.builtin.set_fact:
         cr_uid: "{{ cicstsregion_cr_instance.resources[0].metadata.uid }}"
         run_result: "{{ cicstsregion_cr_instance.resources[0].status.run_result if 'run_result' in cicstsregion_cr_instance.resources[0].status else '' }}"
+
     - name: Debug the CR UID
       ansible.builtin.debug:
         msg: UID for the current CR is {{ cr_uid }}
@@ -43,7 +44,7 @@
   block:
     - name: Set the path for the metadata file
       ansible.builtin.set_fact:
-        metadata_filepath: "{{ metadata_folder }}/{{ DFH_REGION_APPLID }}"
+        metadata_filepath: "{{ DFH_ZFS_MOUNTPATH }}/metadata"
 
     - name: Lookup the metadata file for the current APPLID
       environment: "{{ z_environment_vars }}"
@@ -63,9 +64,9 @@
     - name: Create the metadata directory if it does not exist
       environment: "{{ z_environment_vars }}"
       ansible.builtin.file:
-        path: '{{ metadata_folder }}'
+        path: '{{ DFH_ZFS_MOUNTPATH }}'
         state: directory
-        mode: "600"
+        mode: "700"
 
     - name: Write the metadata file if it doesn't exist already
       environment: "{{ z_environment_vars }}"
@@ -105,6 +106,7 @@
             name: update_instance_status
           vars:
             value: 'duplicate'
+
         - name: Fail the playbook
           ansible.builtin.fail:
             msg: Duplicate CICSTSRegion request for APPLID

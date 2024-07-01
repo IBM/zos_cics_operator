@@ -1,0 +1,30 @@
+# (c) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Check data set "{{ data_set_name }}"
+  environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_mvs_raw:
+    program_name: idcams
+    auth: true
+    dds:
+      - dd_output:
+          dd_name: sysprint
+          return_content:
+            type: text
+      - dd_input:
+          dd_name: sysin
+          content:
+            - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.{{ data_set_name }}')"
+  register: data_set_result
+
+- name: Check data set exists
+  ansible.builtin.assert:
+    that:
+      - data_set_result.ret_code.code == 0
+  when: should_exist is true
+
+- name: Check data set does not exist
+  ansible.builtin.assert:
+    that:
+      - data_set_result.ret_code.code == 4
+  when: should_exist is false

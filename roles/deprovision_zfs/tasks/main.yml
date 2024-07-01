@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Check if the zFS filesystem is still mounted
@@ -32,9 +32,9 @@
       - dd_input:
           dd_name: sysin
           content:
-            - " LISTC ENT('{{ DFH_ZFS }}')"
+            - " LISTC ENT('{{ DFH_ZFS | upper }}')"
             - " IF LASTCC = 0 THEN DO"
-            - "   DELETE {{ DFH_ZFS }}"
+            - "   DELETE {{ DFH_ZFS | upper }}"
             - " END"
             - " ELSE IF LASTCC = 4 THEN SET MAXCC = 0"
   register: delete_dataset_response

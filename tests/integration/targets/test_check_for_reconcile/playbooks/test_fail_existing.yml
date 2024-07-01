@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Test reconcile fails if a separate instance existing CSD
@@ -7,15 +7,14 @@
   gather_facts: false
 
   vars:
-    metadata_folder: /u/ibmuser/testrgs/metadata
     DFH_REGION_SYSID: TST
 
   tasks:
     - name: Check reconciliation with cleanup
       block:
-        - name: Wazi Sandbox
+        - name: Conventions
           ansible.builtin.include_role:
-            name: wazi_sandbox_conventions
+            name: conventions
             public: true
 
         - name: Setup cr uid and disable k8s_managed
@@ -34,6 +33,14 @@
         - name: Check reconcile fails when from a different CR instance - duplicate job
           ansible.builtin.include_role:
             name: check_for_reconciliation
+            apply:
+              ignore_errors: true
+          register: reconcile_error
+
+        - name: Assert failure
+          ansible.builtin.assert:
+            that: not uid_matches
+            fail_msg: "Expected to fail because the same metadata file was used"
 
       always:
         - name: Clean up metadata file

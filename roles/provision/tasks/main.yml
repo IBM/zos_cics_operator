@@ -1,34 +1,37 @@
-# (c) Copyright IBM Corp. 2023
+# -*- coding: utf-8 -*-
+
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
-- name: Perform validation of config options and data sets
-  ansible.builtin.include_role:
-    name: validate
-  when: VALIDATE_PARAMETERS
+- name: Check if there's a CICS region running with APPLID "{{ DFH_REGION_APPLID }}"
+  is_job_running:
+    job_name: "{{ DFH_REGION_APPLID }}"
+  register: cics_running
+  environment: "{{ z_environment_vars }}"
 
-- name: Create and initialize a new CICS CSD
-  ansible.builtin.include_role:
-    name: provision_csd
+- name: Fail if there are any active jobs with name "{{ DFH_REGION_APPLID }}"
+  ansible.builtin.fail:
+    msg: There is already a job running with name {{ DFH_REGION_APPLID }}
+  when:
+    - cics_running.running
 
-- name: Create and initialize a new CICS GCD
+- name: Create and initialize CICS data sets
   ansible.builtin.include_role:
-    name: provision_gcd
-
-- name: Create and initialize a new CICS LCD
-  ansible.builtin.include_role:
-    name: provision_lcd
-
-- name: Create the other CICS data sets
-  ansible.builtin.include_role:
-    name: provision_other
+    name: provision_data_sets
 
 - name: Create the region zFS
   ansible.builtin.include_role:
     name: provision_zfs
 
-- name: Create the started task job
+- name: Create CICS startup JCL
   ansible.builtin.include_role:
-    name: provision_stc
+    name: startup_jcl_smss
+  when: DFH_CMCI_PORT != 0
+
+- name: Create CICS startup JCL
+  ansible.builtin.include_role:
+    name: startup_jcl
+  when: DFH_CMCI_PORT == 0
 
 - name: Start CICS
   ansible.builtin.include_role:

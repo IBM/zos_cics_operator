@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 argument_specs:
@@ -13,42 +13,6 @@ argument_specs:
       DFH_REGION_APPLID:
         type: str
         required: true
-      JOB_CARD:
-        type: str
-        required: true
-      DFH_ZOS_STCJOBS:
-        type: str
-        required: true
-      DFH_DFHGCD:
-        type: str
-        required: true
-      DFH_DFHLCD:
-        type: str
-        required: true
-      DFH_DFHTEMP:
-        type: str
-        required: true
-      DFH_DFHINTRA:
-        type: str
-        required: true
-      DFH_DFHLRQ:
-        type: str
-        required: true
-      DFH_DFHDMPA:
-        type: str
-        required: true
-      DFH_DFHDMPB:
-        type: str
-        required: true
-      DFH_DFHAUXT:
-        type: str
-        required: true
-      DFH_DFHBUXT:
-        type: str
-        required: true
-      DFH_DFHBRNSF:
-        type: str
-        required: true
-      DFH_DFHCSD:
+      DFH_REGION_DATA_SETS:
         type: str
         required: true

@@ -1,26 +1,31 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
----
+
 - name: Start CICS
-  environment: "{{ z_environment_vars }}"
-  ibm.ibm_zos_core.zos_operator:
-    cmd: START {{ DFH_REGION_APPLID }}
+  block:
+    - name: Submit Region JCL
+      environment: "{{ z_environment_vars }}"
+      ansible.builtin.command:
+        cmd: jsub "{{ DFH_REGION_HLQ | upper }}.{{ DFH_REGION_APPLID | upper }}.DFHSTART"
+      register: submit_cics_jcl
+      changed_when: true
+      failed_when: submit_cics_jcl.rc != 0
 
-- name: Wait for CICS to start
-  ansible.builtin.pause:
-    seconds: "{{ start_cics_pause }}"
+    - name: Check if CICS is running for APPLID {{ DFH_REGION_APPLID | upper }}
+      environment: "{{ z_environment_vars }}"
+      is_job_running:
+        job_name: "{{ DFH_REGION_APPLID | upper }}"
+      register: is_cics_running
+      until: is_cics_running.running
+      retries: 10
+      delay: 15
 
-- name: Check if CICS is running for APPLID {{ DFH_REGION_APPLID }}
-  environment: "{{ z_environment_vars }}"
-  is_job_running:
-    job_name: "{{ DFH_REGION_APPLID }}"
-  register: is_cics_running
+    - name: Fail if CICS didn't start
+      when: not is_cics_running.running
+      ansible.builtin.fail:
+        msg: CICS region did not start
 
-- name: Fail if CICS didn't start
-  when: not is_cics_running.running
-  ansible.builtin.fail:
-    msg: CICS region did not start
-
-- name: Report the CICS start outcome
-  ansible.builtin.debug:
-    msg: CICS region with APPLID {{ DFH_REGION_APPLID }} has been started.
+    - name: Report the CICS start outcome
+      environment: "{{ z_environment_vars }}"
+      ansible.builtin.debug:
+        msg: CICS region with APPLID {{ DFH_REGION_APPLID | upper }} has been started.

@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 # The namespace of the collection. This can be a company/brand/organization or product namespace under which all
@@ -10,7 +10,7 @@ namespace: ibm
 name: zos_cics_operator
 
 # The version of the collection. Must be compatible with semantic versioning
-version: 1.0.1
+version: 2.0.0
 
 # The path to the Markdown (.md) readme file. This path is relative to the root of the collection
 readme: README.md
@@ -38,7 +38,8 @@ tags: [ibm, z_os, cics, zoscb, infrastructure]
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
 dependencies: {
-  "ibm.ibm_zos_core": "1.6.0"
+  "ibm.ibm_zos_core": "1.9.1",
+  "ibm.ibm_zos_cics": "2.1.0"
 }
 
 # The URL of the originating SCM repository
@@ -70,6 +71,8 @@ build_ignore:
   - .DS_Store
   - .whitesource
   - release_os.py
+  - .secrets.baseline
+  - secretsmanagercli.sh
   # Items beyond here will be included in the OS repo
   - OS-INCLUDE
   - .gitignore

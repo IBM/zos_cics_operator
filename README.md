@@ -7,7 +7,7 @@ The **IBM® CICS® TS Operator collection** provides automation for provisioning
 Import this collection into an instance of **z/OS® Cloud Broker** running in Red Hat® OpenShift® Container Platform to get started quickly. **z/OS Cloud Broker** generates a Kubernetes operator, making it easy to deploy CICS TS to a z/OS endpoint. For information, see the [documentation](https://www.ibm.com/docs/en/cloud-paks/z-modernization-stack/latest?topic=connect-cics-ts-cics-ts-operator).
 
 
-**The IBM Z and Cloud Modernization Stack**
+**IBM Z and Cloud Modernization Stack**
 ===========================================
 **IBM CICS TS Operator** is part of the **IBM Z® and Cloud Modernization Stack.** 
   
@@ -24,11 +24,11 @@ The **IBM CICS TS Operator collection** contains the following capabilities:
 
 * Ansible playbooks to de-provision CICS TS on z/OS 
 
-This Ansible collection must be used with **z/OS Cloud Broker V2.2 or newer.** For all system requirements, see the [documentation](https://www.ibm.com/docs/en/cloud-paks/z-modernization-stack/latest?topic=planning-system-requirements).
+This Ansible collection must be used with **z/OS Cloud Broker V2.2.3 or later.** For all system requirements, see the [documentation](https://www.ibm.com/docs/en/cloud-paks/z-modernization-stack/latest?topic=planning-system-requirements).
 
 **Copyright**
 =========
-© Copyright IBM Corporation 2023.
+© Copyright IBM Corporation 2023, 2024.
 
 **License**
 =======

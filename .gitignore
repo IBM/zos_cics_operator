@@ -5,3 +5,5 @@ collections/ansible_collections/
 .venv
 tests/output
 __pycache__/
+inventories/inventory_zos.yml
+core

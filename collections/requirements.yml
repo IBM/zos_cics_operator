@@ -1,10 +1,12 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 collections:
   - name: ibm.ibm_zos_core
-    version: 1.6.0
+    version: 1.9.1
   - name: operator_sdk.util
     version: 0.5.0
   - name: kubernetes.core
     version: 2.4.0
+  - name: ibm.ibm_zos_cics
+    version: 2.1.0

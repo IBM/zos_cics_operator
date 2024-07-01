@@ -1,8 +1,0 @@
-set -eux
-mkdir -m 775 -p "{{ DFH_ZFS_MOUNTPATH }}"
-/usr/sbin/mount -t ZFS -a no -f {{ DFH_ZFS }} {{ DFH_ZFS_MOUNTPATH }}
-mkdir {{ DFH_ZFS_MOUNTPATH }}/PROVISION_OK
-
-echo "Creating USSCONFIG directory from example files in DFH_CICS_USSHOME"
-cp -R {{ DFH_CICS_USSHOME }}/dfhconfig {{ DFH_ZFS_MOUNTPATH }}
-cp -R {{ DFH_CICS_USSHOME }}/security {{ DFH_ZFS_MOUNTPATH }}/dfhconfig

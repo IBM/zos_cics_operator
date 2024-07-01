@@ -1,0 +1,52 @@
+# (c) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Check DFHSTART
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHSTART"
+
+- name: Check DFHGCD
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHGCD"
+
+- name: Check DFHLCD
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHLCD"
+
+- name: Check DFHCSD
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHCSD"
+
+- name: Check DFLRQ
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHLRQ"
+
+- name: Check DFHAUXT
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHAUXT"
+
+- name: Check DFHBUXT
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHBUXT"
+
+- name: Check DFHDMPA
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHDMPA"
+
+- name: Check DFHDMPB
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHDMPB"
+
+- name: Check DFHINTRA
+  ansible.builtin.import_tasks: ./check_data_set_exists.yml
+  vars:
+    data_set_name: "DFHINTRA"

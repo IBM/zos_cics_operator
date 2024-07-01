@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 # This role deprovisions a CICS TS region from the z/OS instance defined in the Ansible inventory
 #
@@ -12,15 +12,18 @@
   hosts: all
   gather_facts: false
 
+  vars_files:
+    - vars/z_environment_vars.yml
+
   tasks:
+    - name: Apply conventions
+      ansible.builtin.include_role:
+        name: conventions
+        public: true
+
     - name: Validate the user inputs
       ansible.builtin.include_role:
-        name: validate_input
-
-    - name: Apply Wazi Sandbox conventions
-      ansible.builtin.include_role:
-        name: wazi_sandbox_conventions
-        public: true
+        name: validate
 
     - name: Check if this is a duplicate request
       when: k8s_managed
@@ -38,17 +41,9 @@
           ansible.builtin.set_fact:
             run_result: "{{ cicstsregion_cr_instance.resources[0].status.run_result if 'run_result' in cicstsregion_cr_instance.resources[0].status else '' }}"
 
-    - name: Deprovision a CICS region
+    - name: Deprovision region {{ DFH_REGION_APPLID | upper }}
+      ansible.builtin.include_role:
+        name: deprovision
       when:
         - validation_error is not defined
         - run_result != "duplicate"
-      block:
-        - name: Deprovision region {{ DFH_REGION_APPLID }}
-          ansible.builtin.include_role:
-            name: deprovision
-
-        - name: Remove metadata file
-          environment: "{{ z_environment_vars }}"
-          ansible.builtin.file:
-            path: "{{ DFH_ZFS_METADATA }}/{{ DFH_REGION_APPLID }}"
-            state: absent

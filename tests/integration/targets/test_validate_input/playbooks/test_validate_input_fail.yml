@@ -1,0 +1,66 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Validate Fail Running Job
+  hosts: all
+  gather_facts: false
+  environment: "{{ z_environment_vars }}"
+
+  module_defaults:
+    ibm.ibm_zos_cics_operator.validate_inputs:
+      sys_id: XYZ
+      applid: TSTMEXYZ
+      zfs_path: /u/ibmuser/testrgs
+      user: IBMUSER
+      pyz: /u/ibmuser/v3r12/pyz
+      zoau: /usr/lpp/IBM/zoautil
+      dfltuser: CICSUSER
+      region_hlq: IBMUSER.TESTRGS
+      le_hlq: CEE
+      cics_hlq: FH.V6R1M0.CICS
+      cics_license: DFH.V6R1M0.SDFHLIC
+      cics_usshome: "{{ DFH_CICS_USSHOME }}"
+      cpsm_hlq: DFH.V6R1M0.CPSM
+      cmci_port: 0
+
+  tasks:
+    - name: Conventions
+      ansible.builtin.include_role:
+        name: conventions
+        public: true
+
+    - name: Validate input with too long sysid
+      validate_inputs:
+        sys_id: TOOLONG
+      ignore_errors: true
+      register: result
+
+    - name: Assert module failed on bad sysid
+      ansible.builtin.assert:
+        that:
+          - result is failed
+          - result.msg == "sys_id must be between 1 and 4 characters. Value was TOOLONG"
+
+    - name: Validate input with applid that doesnt meet the regex requirements
+      ignore_errors: true
+      validate_inputs:
+        applid: CHAR^A
+      register: result
+
+    - name: Assert module failed on bad applid
+      ansible.builtin.assert:
+        that:
+          - result is failed
+          - "'applid' and 'was not valid' in result.msg"
+
+    - name: Validate parsing a file path which doesnt exist
+      ignore_errors: true
+      validate_inputs:
+        zoau: /usr/lpp/dont/exist/fail
+      register: result
+
+    - name: Assert module failed on non existent data set
+      ansible.builtin.assert:
+        that:
+          - result is failed
+          - result.msg == "/usr/lpp/dont/exist/fail does not exist"
