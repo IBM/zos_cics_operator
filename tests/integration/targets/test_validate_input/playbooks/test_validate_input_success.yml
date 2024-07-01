@@ -1,0 +1,36 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Test Validate Input Success
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Conventions
+      ansible.builtin.include_role:
+        name: conventions
+        public: true
+
+    - name: Test input validation
+      environment: "{{ z_environment_vars }}"
+      validate_inputs:
+        sys_id: XYZ
+        applid: TSTMEXYZ
+        zfs_path: /u/ibmuser/testrgs
+        user: IBMUSER
+        pyz: /u/ibmuser/v3r12/pyz
+        zoau: /usr/lpp/IBM/zoautil
+        dfltuser: CICSUSER
+        region_hlq: IBMUSER.TESTRGS
+        le_hlq: CEE
+        cics_hlq: FH.V6R1M0.CICS
+        cics_license: DFH.V6R1M0.SDFHLIC
+        cics_usshome: "{{ DFH_CICS_USSHOME }}"
+        cpsm_hlq: DFH.V6R1M0.CPSM
+        cmci_port: 0
+      register: result
+
+    - name: Assert module did not fail
+      ansible.builtin.assert:
+        that:
+          - result is not failed

@@ -1,8 +1,61 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
----
+
 - name: Delete CICS data sets
-  ansible.builtin.include_role:
-    name: zos_job_submit_template
-  vars:
-    zos_job_submit_template_src: DCICSDDS.j2
+  module_defaults:
+    group/ibm.ibm_zos_cics.region:
+      state: absent
+      region_data_sets:
+        template: "{{ DFH_REGION_DATA_SETS }}.<< data_set_name >>"
+      cics_data_sets:
+        template: "{{ DFH_CICS_HLQ }}.<< lib_name >>"
+      le_data_sets:
+        template: "{{ DFH_LE_HLQ | upper }}.<< lib_name >>"
+
+  block:
+    - name: Delete the auxiliary temporary storage data set (DFHTEMP)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_temp_storage:
+
+    - name: Delete the auxiliary trace data set (DFHAUXT)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_trace:
+
+    - name: Delete the second auxiliary trace data set (DFHBUXT)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_trace:
+        destination: B
+
+    - name: Delete the transaction dump data set (DFHDMPA)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.transaction_dump:
+
+    - name: Delete the second transaction dump data set (DFHDMPB)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.transaction_dump:
+        destination: B
+
+    - name: Delete the CSD data set (DFHCSD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.csd:
+
+    - name: Delete the transient data intrapartition data set (DFHINTRA)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.td_intrapartition:
+
+    - name: Delete the local request queue data set (DFHLRQ)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.local_request_queue:
+
+    - name: Delete the global catalog data set (DFHGCD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.global_catalog:
+
+    - name: Delete the local catalog data set (DFHLCD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.local_catalog:
+
+    - name: Delete CICS Region JCL
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.region_jcl:
+        applid: "{{ DFH_REGION_APPLID | upper }}"

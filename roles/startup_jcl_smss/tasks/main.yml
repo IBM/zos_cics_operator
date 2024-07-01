@@ -1,0 +1,60 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+
+- name: Start managed CICS region
+  module_defaults:
+    group/ibm.ibm_zos_cics.region:
+      region_data_sets:
+        template: "{{ DFH_REGION_HLQ | upper }}.{{ DFH_REGION_APPLID | upper }}.<< data_set_name >>"
+      cics_data_sets:
+        template: "{{ DFH_CICS_HLQ | upper }}.<< lib_name >>"
+        sdfhlic: "{{ DFH_CICS_LICENSE_DATA_SET | upper }}"
+      cpsm_data_sets:
+        template: "{{ DFH_CPSM_HLQ | upper }}.<< lib_name >>"
+      le_data_sets:
+        template: "{{ DFH_LE_HLQ | upper }}.<< lib_name >>"
+
+  block:
+    - name: Update CSD to include SMSS definitions
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.csd:
+        state: changed
+        input_location: INLINE
+        input_content: |
+          COPY GROUP(DFH$WU) TO(WUIGRP)
+          ALTER TCPIPSERVICE(DFH$WUTC) GROUP(WUIGRP) PORT({{ DFH_CMCI_PORT }})
+          ADD GROUP(WUIGRP) LIST({{ DFH_REGION_CSDLIST }})
+
+    - name: Create CICS Region startup JCL
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.region_jcl:
+        state: initial
+        applid: "{{ DFH_REGION_APPLID | upper }}"
+        output_data_sets:
+          default_sysout_class: A
+        job_parameters:
+          region: 0M
+          msglevel:
+            statements: 1
+            messages: 1
+          msgclass: R
+        sit_parameters:
+          parmerr: ABEND
+          sit: "{{ DFH_REGION_SIT }}"
+          cicssvc: "{{ DFH_REGION_CICSSVC }}"
+          grplist: (DFHLIST,{{ DFH_REGION_CSDLIST }})
+          start: AUTO
+          aicons: AUTO
+          auxtrsw: ALL
+          csdrecov: NONE
+          traniso: "YES"
+          ircstrt: "YES"
+          isc: "YES"
+          gmtext: "{{ DFH_REGION_APPLID | upper }} CICS SYSTEM"
+          dfltuser: "{{ DFH_REGION_DFLTUSER }}"
+          usshome: "{{ DFH_CICS_USSHOME }}"
+          ussconfig: "{{ DFH_ZFS_MOUNTPATH }}/dfhconfig"
+          sysidnt: "{{ DFH_REGION_SYSID }}"
+          sec: "NO"
+          cpsmconn: "NO"
+      register: start_cics_result

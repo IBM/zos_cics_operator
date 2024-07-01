@@ -1,0 +1,50 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+argument_specs:
+  main:
+    options:
+      DFH_REGION_APPLID:
+        type: str
+        required: true
+      DFH_REGION_HLQ:
+        type: str
+        required: true
+      DFH_CICS_HLQ:
+        type: str
+        required: true
+      DFH_CPSM_HLQ:
+        type: str
+        required: true
+      DFH_LE_HLQ:
+        type: str
+        required: true
+      DFH_REGION_CSDLIST:
+        type: str
+        required: true
+      DFH_REGION_SIT:
+        type: str
+        required: false
+        default: 6$
+      DFH_REGION_CICSSVC:
+        type: int
+        required: true
+      DFH_CICS_USSHOME:
+        type: str
+        required: true
+      DFH_ZFS_MOUNTPATH:
+        type: str
+        required: true
+      DFH_REGION_DFLTUSER:
+        type: str
+        required: true
+      DFH_CMCI_PORT:
+        type: int
+        required: true
+      start_cics_pause:
+        type: int
+        required: false
+        default: 15
+      z_environment_vars:
+        type: dict
+        required: true

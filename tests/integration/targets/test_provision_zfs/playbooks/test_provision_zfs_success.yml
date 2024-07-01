@@ -1,22 +1,21 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
-- name: Test
+- name: Test Provision zFS
   hosts: all
 
   gather_facts: false
 
   vars:
     DFH_REGION_SYSID: TST
-    DFH_REGION_HLQ: IBMUSER.TESTRGS
-    DFH_ZFS_MOUNTPATH: /u/ibmuser/testrgs/{{ DFH_REGION_APPLID }}
+    DFH_ZFS_MOUNTPATH: /u/ibmuser/testrgs/{{ DFH_REGION_APPLID | upper }}
 
   tasks:
     - name: Provision zFS with cleanup
       block:
-        - name: Wazi Sandbox
+        - name: Conventions
           ansible.builtin.include_role:
-            name: wazi_sandbox_conventions
+            name: conventions
             public: true
 
         - name: Provision zFS

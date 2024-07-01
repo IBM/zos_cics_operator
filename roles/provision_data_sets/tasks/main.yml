@@ -1,0 +1,117 @@
+# (c) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+
+- name: Create CICS data sets
+  module_defaults:
+    group/ibm.ibm_zos_cics.region:
+      state: initial
+      region_data_sets:
+        template: "{{ DFH_REGION_DATA_SETS | upper }}.<< data_set_name >>"
+      cics_data_sets:
+        template: "{{ DFH_CICS_HLQ | upper }}.<< lib_name >>"
+
+  block:
+    - name: Create the auxiliary temporary storage data set (DFHTEMP)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_temp_storage:
+        space_type: REC
+        space_primary: 200
+        space_secondary: 0
+
+    - name: Create the auxiliary trace data set (DFHAUXT)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_trace:
+        space_type: CYL
+        space_primary: 25
+        space_secondary: 0
+
+    - name: Create the second auxiliary trace data set (DFHBUXT)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.aux_trace:
+        destination: B
+        space_type: CYL
+        space_primary: 25
+        space_secondary: 0
+
+    - name: Create the transaction dump data set (DFHDMPA)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.transaction_dump:
+        space_type: CYL
+        space_primary: 25
+        space_secondary: 0
+
+    - name: Create the second transaction dump data set (DFHDMPB)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.transaction_dump:
+        destination: B
+        space_type: CYL
+        space_primary: 25
+        space_secondary: 0
+
+    - name: Create the CSD data set (DFHCSD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.csd:
+        space_type: REC
+        space_primary: 12000
+        space_secondary: 0
+
+    - name: Update the CSD data set with the CSDUP script
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.csd:
+        state: changed
+        input_location: INLINE
+        input_content: |
+          ADD GROUP(DFHTERMC) LIST({{ DFH_REGION_CSDLIST }})
+
+          DEFINE JOURNALMODEL(DFHLOG)
+              GROUP({{ DFH_REGION_CSDGROUP }})
+              DESCRIPTION(Primary CICS system log)
+              JOURNALNAME(DFHLOG)
+              TYPE(DUMMY)
+
+          DEFINE JOURNALMODEL(DFHSHUNT)
+              GROUP({{ DFH_REGION_CSDGROUP }})
+              DESCRIPTION(Secondary CICS system log+shunted tasks)
+              JOURNALNAME(DFHSHUNT)
+              TYPE(DUMMY)
+
+          DEFINE JOURNALMODEL(DFHJ) GROUP({{ DFH_REGION_CSDGROUP }})
+              DESCRIPTION(Model for CICS user journals)
+              JOURNALNAME(DFHJ*)
+              TYPE(DUMMY)
+
+          DEFINE JOURNALMODEL(DFHLGLOG)
+              GROUP({{ DFH_REGION_CSDGROUP }})
+              DESCRIPTION(Dummy Log of logs)
+              JOURNALNAME(DFHLGLOG)
+              TYPE(DUMMY)
+
+          ADD GROUP({{ DFH_REGION_CSDGROUP }}) LIST({{ DFH_REGION_CSDLIST }})
+
+    - name: Create the transient data intrapartition data set (DFHINTRA)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.td_intrapartition:
+        space_type: REC
+        space_primary: 100
+        space_secondary: 0
+
+    - name: Create the local request queue data set (DFHLRQ)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.local_request_queue:
+        space_type: CYL
+        space_primary: 2
+        space_secondary: 1
+
+    - name: Create the global catalog data set (DFHGCD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.global_catalog:
+        space_type: CYL
+        space_primary: 3
+        space_secondary: 1
+
+    - name: Create the local catalog data set (DFHLCD)
+      environment: "{{ z_environment_vars }}"
+      ibm.ibm_zos_cics.local_catalog:
+        space_type: REC
+        space_primary: 200
+        space_secondary: 10

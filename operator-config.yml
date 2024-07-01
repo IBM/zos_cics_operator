@@ -1,22 +1,20 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 name: zos-cics-ts-operator
-displayName: IBM Z and Cloud Modernization Stack - CICS TS Operator
+displayName: CICS TS Operator
 domain: ibm
-version: 1.0.1
+version: 2.0.0
 description: >-
-  # IBM Z and Cloud Modernization Stack - CICS TS Operator
-    The **IBM CICS TS Operator Collection** provides automation around provisioning CICS Transaction Server for z/OS to one or more Wazi Sandbox instances and
+  # CICS TS Operator
+    The **IBM CICS TS Operator Collection** provides automation around provisioning CICS Transaction Server for z/OS to one or more z/OS endpoints and
     managing its lifecycle in a hybrid cloud environment.
-    The **IBM CICS TS Operator Collection** is designed to work with Wazi Sandbox instances that are based on the Extended ADCD image to provide a seamless
-    self-service experience for z/OS application developers in a cloud native environment.
   # Input
-    By working with Wazi Sandbox instances, the **IBM CICS TS Operator Collection** already knows about the location of system and CICS TS resources needed to
-    provision a CICS TS system. A single input is required:
-    - System identifier (SYSID): This must be unique among the CICS TS instances running on the same Wazi sandbox. This 1-3 character identifier is prefixed
-    with 'ZCICS' to create the region application identifier (APPLID).
-  # Limitations
-    This version of the **IBM CICS TS Operator Collection** is designed to work only with Wazi Sandbox instances or Extended ADCD with CICS TS pre-installed.
+    IBM CICS TS Operator provides support for all in-service releases of CICS TS. You can provision a CICS TS region at a release level of your choice.
+    The actual release level that gets provisioned depends on the value of HLQ for CICS load libraries and the CICS SVC that you have specified for the
+    z/OS endpoint. You must ensure that you are pointing to the correct libraries for the release of your CICS installation.
+    You can provision a CICS TS region as a CICS System Management Single Server (SMSS). An SMSS contains the CICS management client interface (CMCI).
+    To provision an SMSS, you must set the HLQ for CICSPlex SM data sets and CMCI port parameters when you create a CICS TS instance. By default,
+    IBM CICS TS Operator provisions a stand-alone CICS region, which does not have the CMCI component.
   # Version
     Check the [release notes](https://www.ibm.com/docs/SSV97FN_latest/cics-operator/release-notes.html) for the latest information about versions of this
     Operator Collection.
@@ -27,14 +25,99 @@ icon:
 resources:
   - kind: CICSTSRegion
     displayName: CICS TS region
-    description: Provision a CICS TS region on a Wazi Sandbox instance
+    description: Provision a CICS TS region on a z/OS endpoint
     playbook: provision.yml
     finalizer: deprovision.yml
     vars:
       - name: DFH_REGION_SYSID
         displayName: System identifier (SYSID)
         description: >-
-          Region system identifier. This must be no longer than 3 characters.
-          The region application identifier (APPLID) will be created by prefixing the value of SYSID with 'ZCICS'
+           The system identifier (SYSID) for the CICS TS region. This must be 1-4 characters long.
         type: string
         required: true
+
+      - name: DFH_REGION_APPLID
+        displayName: Region application identifier (APPLID)
+        description: >-
+          The application identifier (APPLID) of the CICS TS region. This must be no longer than 8 characters.
+        type: string
+        required: true
+
+      - name: DFH_ZFS_MOUNTPOINT
+        displayName: zFS path
+        description: >-
+          The name and path of the root directory for CICS TS configuration files on z/OS UNIX. Specify a USS directory
+          that CICS TS Operator is given access to write CICS TS configuration files.
+        type: string
+        required: true
+
+      - name: USER
+        displayName: z/OS User
+        description: >-
+          The z/OS user ID used to provision CICS data sets and submit jobs
+        type: string
+        required: true
+
+      - name: DFH_CICS_HLQ
+        displayName: HLQ for CICS load libraries
+        description: >-
+          The high level qualifier used in the data set names of CICS load libraries, hlq.SDFHAUTH and hlq.SDFHLOAD
+          For example, if you specify the high level qualifier as CICSTS62.CICS, the data set names are C(CICSTS62.CICS.SDFHAUTH) and C(CICSTS62.CICS.SDFHLOAD).
+        type: string
+        required: false
+        default: CICSTS62.CICS
+
+      - name: DFH_REGION_HLQ
+        displayName: HLQ for CICS region data sets
+        description: >-
+          The high level qualifier used in the names of CICS region data sets.
+          The location of the region data sets to be created by using a template, for example,
+          C(REGIONS.ABCD0001.<< data_set_name >>).
+          The base location of the region data sets with a template.
+        type: string
+        required: false
+        default: IBMUSER.REGIONS
+
+      - name: DFH_CICS_LICENSE_DATA_SET
+        displayName: CICS license data set
+        description: >-
+          The data set (SDFHLIC) containing the CICS license
+        type: string
+        required: false
+        default: CICSTS62.CICS.SDFHLIC
+
+      - name: DFH_CICS_USSHOME
+        displayName: CICS USS home directory
+        description: >-
+           The name and path of the root directory for CICS TS files on z/OS UNIX.
+        type: string
+        required: false
+        default: /usr/lpp/cicsts/cicsts62
+
+      - name: DFH_REGION_DFLTUSER
+        displayName: Default CICS user
+        description: >-
+          The RACF user ID of the default user, that is, the user whose security attributes are used to protect CICS resources in
+          the absence of other, more specific user ID. The value is set to the DFLTUSER system initialization parameter of the CICS
+          TS region.
+        type: string
+        required: false
+        default: CICSUSER
+
+      - name: DFH_CPSM_HLQ
+        displayName: HLQ for CICSPlex SM data sets
+        description: >-
+          This parameter is required if you want to provision an SMSS.
+          The high level qualifier used in the data set names of CICSPlex SM load libraries:
+            hlq.SEYUAUTH
+            hlq.SEYULOAD
+        type: string
+        required: false
+        default: CICSTS62.CPSM
+
+      - name: DFH_CMCI_PORT
+        displayName: CMCI port
+        description: >-
+          The HTTP port for the CMCI connection. This parameter is required if you want to provision an SMSS
+        type: integer
+        required: false

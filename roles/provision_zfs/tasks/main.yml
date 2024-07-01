@@ -1,13 +1,48 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Create the CICS zFS data set
-  ansible.builtin.include_role:
-    name: zos_job_submit_template
-  vars:
-    zos_job_submit_template_src: ZFS.j2
+  environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_data_set:
+    name: "{{ DFH_ZFS }}"
+    type: ZFS
+    space_primary: 20
+    space_secondary: 5
+    space_type: CYL
+
+- name: Make zFS mount path directory
+  environment: "{{ z_environment_vars }}"
+  ansible.builtin.file:
+    path: "{{ DFH_ZFS_MOUNTPATH }}"
+    state: directory
+    mode: "755"
 
 - name: Mount zFS
-  ansible.builtin.shell: true && {{ lookup('template', 'mountZFS.sh.j2') }}
-  changed_when: true
   environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_mount:
+    src: "{{ DFH_ZFS | upper }}"
+    path: "{{ DFH_ZFS_MOUNTPATH }}"
+    fs_type: ZFS
+    automove: NOAUTOMOVE
+  changed_when: true
+
+- name: Make provision directory
+  environment: "{{ z_environment_vars }}"
+  ansible.builtin.file:
+    path: "{{ DFH_ZFS_MOUNTPATH }}/PROVISION_OK"
+    state: directory
+    mode: "755"
+
+- name: Create USSCONFIG directory from example files in DFH_CICS_USSHOME
+  environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_copy:
+    src: "{{ DFH_CICS_USSHOME }}/dfhconfig"
+    dest: "{{ DFH_ZFS_MOUNTPATH }}"
+    remote_src: true
+
+- name: Create USSCONFIG directory from example files in DFH_CICS_USSHOME
+  environment: "{{ z_environment_vars }}"
+  ibm.ibm_zos_core.zos_copy:
+    src: "{{ DFH_CICS_USSHOME }}/security"
+    dest: "{{ DFH_ZFS_MOUNTPATH }}/dfhconfig"
+    remote_src: true

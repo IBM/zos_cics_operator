@@ -1,0 +1,7 @@
+# (c) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+# Can't set ansible_python_interpreter in any module other than set_facts or include_vars
+- name: Set interpreter
+  ansible.builtin.set_fact:
+    ansible_python_interpreter: "{{ DFH_ZOS_PYTHON_PATH }}/bin/python3"

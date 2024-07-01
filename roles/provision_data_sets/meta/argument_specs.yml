@@ -1,0 +1,25 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+argument_specs:
+  main:
+    short_description: Provision CICS data sets
+    options:
+      z_environment_vars:
+        type: dict
+        required: true
+      ansible_user:
+        type: str
+        required: true
+      DFH_CICS_HLQ:
+        type: str
+        required: true
+      DFH_REGION_HLQ:
+        type: str
+        required: true
+      DFH_REGION_APPLID:
+        type: str
+        required: true
+      DFH_REGION_DATA_SETS:
+        type: str
+        required: true

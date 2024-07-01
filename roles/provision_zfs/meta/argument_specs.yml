@@ -1,4 +1,4 @@
-# (c) Copyright IBM Corp. 2023
+# (c) Copyright IBM Corp. 2023,2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 argument_specs:
@@ -6,12 +6,6 @@ argument_specs:
     options:
       z_environment_vars:
         type: dict
-        required: true
-      DFH_REGION_SYSID:
-        type: str
-        required: true
-      JOB_CARD:
-        type: str
         required: true
       DFH_ZFS:
         type: str
