@@ -1,5 +1,5 @@
 -r collections/requirements.txt
-ansible-core==2.15.5
+ansible-core==2.15.7
 ansible-lint==6.22.1
 debugpy==1.8.1
 pexpect==4.9.0
