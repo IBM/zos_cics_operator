@@ -1,0 +1,125 @@
+name: Release
+
+on:
+  push: # this workflow is triggered when tags are pushed to GitHub
+    tags:
+      - "**"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine tag
+        run: "echo \"RELEASE_TAG=${GITHUB_REF#refs/tags/}\" >> $GITHUB_ENV"
+
+      - name: Create release
+        uses: actions/github-script@v7
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            try {
+              const response = await github.rest.repos.createRelease({
+                draft: false,
+                generate_release_notes: true,
+                name: process.env.RELEASE_TAG,
+                owner: context.repo.owner,
+                prerelease: false,
+                repo: context.repo.repo,
+                tag_name: process.env.RELEASE_TAG,
+              });
+              core.exportVariable('RELEASE_ID', response.data.id);
+              core.exportVariable('RELEASE_UPLOAD_URL', response.data.upload_url);
+            } catch (error) {
+              core.setFailed(error.message);
+            }
+
+  publish:
+    name: Publish
+    needs: release
+    runs-on: ubuntu-latest
+    environment: release
+
+    env:
+      FULL_COLLECTION_PATH: "${GITHUB_WORKSPACE}/${{ vars.COLLECTION_PATH }}"
+
+    steps:
+      - name: Determine tag
+        run: "echo \"RELEASE_TAG=${GITHUB_REF#refs/tags/}\" >> $GITHUB_ENV"
+
+      - name: Check-out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
+
+      # install, remove, and modify dependencies as needed
+
+      - name: Install Ansible
+        run: pip install ansible==8.0.0
+
+      - name: Install Operator Collection SDK
+        run: ansible-galaxy collection install git+https://github.com/IBM/operator-collection-sdk.git#ibm/operator_collection_sdk -f
+
+      - name: Create local/builds folder it it doesn't exist...
+        run: mkdir -p "${{ env.FULL_COLLECTION_PATH }}/local/builds"
+
+      - name: Build Collection
+        run: |
+          ansible-galaxy collection build ${{ env.FULL_COLLECTION_PATH }} -f --output-path ${{ env.FULL_COLLECTION_PATH }}/local/builds
+          echo "COLLECTION_BUILD=$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)" >> $GITHUB_ENV
+          echo "COLLECTION_BUILD_LOCATION=${{ env.FULL_COLLECTION_PATH }}/local/builds/$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)" >> $GITHUB_ENV
+
+      - name: Sign Collection
+        run: |
+          openssl genrsa -out privatekey.pem 2048
+          openssl rsa -in privatekey.pem -out ${{ vars.COLLECTION_NAME }}.pub -outform PEM -pubout
+          openssl dgst -sha256 -sign privatekey.pem -out ${{ vars.COLLECTION_NAME }}-${RELEASE}.sig ${COLLECTION_BUILD_LOCATION}
+          openssl dgst -sha256 -verify ${{ vars.COLLECTION_NAME }}.pub -signature ${{ vars.COLLECTION_NAME }}-${RELEASE}.sig ${COLLECTION_BUILD_LOCATION}
+          echo "PUBLIC_KEY=$(readlink -f ${{ vars.COLLECTION_NAME }}.pub)" >> $GITHUB_ENV
+          echo "SIGNATURE=$(readlink -f ${{ vars.COLLECTION_NAME }}-${RELEASE}.sig)" >> $GITHUB_ENV
+        env:
+          RELEASE: ${{ env.RELEASE_TAG }}
+
+      - name: Upload Collection and Signature Files to GitHub
+        run: |
+          gh release upload ${RELEASE_TAG} ${COLLECTION_BUILD_LOCATION}
+          gh release upload ${RELEASE_TAG} ${PUBLIC_KEY}
+          gh release upload ${RELEASE_TAG} ${SIGNATURE}
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+
+      - name: Build Offline Collection
+        run: |
+          rm -rf ${{ env.FULL_COLLECTION_PATH }}/local/
+          cd ${{ env.FULL_COLLECTION_PATH }}
+          ansible-playbook ibm.operator_collection_sdk.create_offline_requirements
+          ansible-galaxy collection build ${{ env.FULL_COLLECTION_PATH }} -f --output-path ${{ env.FULL_COLLECTION_PATH }}/local/builds
+          COLLECTION_BUILD=$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)
+          mv ${{ env.FULL_COLLECTION_PATH }}/local/builds/${COLLECTION_BUILD} ${{ env.FULL_COLLECTION_PATH }}/local/builds/${{ vars.COLLECTION_NAME }}-offline-${RELEASE}.tar.gz
+          echo "COLLECTION_BUILD_OFFLINE_LOCATION=${{ env.FULL_COLLECTION_PATH }}/local/builds/$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)" >> $GITHUB_ENV
+        env:
+          RELEASE: ${{ env.RELEASE_TAG }}
+
+      - name: Sign Offline Collection
+        run: |
+          openssl genrsa -out privatekey-offline.pem 2048
+          openssl rsa -in privatekey-offline.pem -out ${{ vars.COLLECTION_NAME }}-offline.pub -outform PEM -pubout
+          openssl dgst -sha256 -sign privatekey-offline.pem -out ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig ${COLLECTION_BUILD_OFFLINE_LOCATION}
+          openssl dgst -sha256 -verify ${{ vars.COLLECTION_NAME }}-offline.pub -signature ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig ${COLLECTION_BUILD_OFFLINE_LOCATION}
+          echo "PUBLIC_KEY_OFFLINE=$(readlink -f ${{ vars.COLLECTION_NAME }}-offline.pub)" >> $GITHUB_ENV
+          echo "SIGNATURE_OFFLINE=$(readlink -f ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig)" >> $GITHUB_ENV
+        env:
+          RELEASE: ${{ env.RELEASE_TAG }}
+
+      - name: Upload Offline Collection and Signature Files to GitHub
+        run: |
+          gh release upload ${RELEASE_TAG} ${COLLECTION_BUILD_OFFLINE_LOCATION}
+          gh release upload ${RELEASE_TAG} ${PUBLIC_KEY_OFFLINE}
+          gh release upload ${RELEASE_TAG} ${SIGNATURE_OFFLINE}
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}

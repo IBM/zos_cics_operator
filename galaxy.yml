@@ -80,3 +80,4 @@ build_ignore:
   - dev-requirements.txt
   - tests
   - collections-requirements.txt
+  - .github
