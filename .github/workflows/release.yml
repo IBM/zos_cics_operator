@@ -45,7 +45,7 @@ jobs:
     environment: release
 
     env:
-      FULL_COLLECTION_PATH: "${GITHUB_WORKSPACE}/${{ vars.COLLECTION_PATH }}"
+      FULL_COLLECTION_PATH: "${GITHUB_WORKSPACE}/${{ vars.COLLECTION_PATH }}/${{ vars.COLLECTION_NAME }}"
 
     steps:
       - name: Determine tag
@@ -65,8 +65,10 @@ jobs:
       - name: Install Operator Collection SDK
         run: ansible-galaxy collection install git+https://github.com/IBM/operator-collection-sdk.git#ibm/operator_collection_sdk -f
 
-      - name: Create local/builds folder it it doesn't exist...
-        run: mkdir -p "${{ env.FULL_COLLECTION_PATH }}/local/builds"
+      - name: Create local/builds folder it it doesn't exist and copy contents to collections path
+        run: |
+          mkdir -p "${{ env.FULL_COLLECTION_PATH }}/local/builds"
+          rsync -av ${GITHUB_WORKSPACE} ${{ vars.COLLECTION_PATH }} --exclude ${{ vars.COLLECTION_PATH }}
 
       - name: Build Collection
         run: |
