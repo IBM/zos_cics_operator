@@ -162,7 +162,7 @@ def test_is_safe_path_invalid_file_path_null_bytes():
     path = "/this/isnt\x00/a/safe/path"
     validation_module.check_safe_path(path)
     assert validation_module.result["failed"]
-    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: embedded null byte"
+    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: lstat: embedded null character in path"
 
 
 def test_is_safe_path_invalid_dataset_null_bytes():
@@ -170,7 +170,7 @@ def test_is_safe_path_invalid_dataset_null_bytes():
     path = "this.isnt.\x00.a.safe.path"
     validation_module.check_safe_path(path)
     assert validation_module.result["failed"]
-    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: embedded null byte"
+    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: lstat: embedded null character in path"
 
 
 def test_is_safe_path_invalid_file_path_integer():
