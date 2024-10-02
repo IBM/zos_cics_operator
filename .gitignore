@@ -3,6 +3,7 @@
 collections/ansible_collections/
 .DS_Store
 .venv
+.vscode
 tests/output
 __pycache__/
 inventories/inventory_zos.yml
