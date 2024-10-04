@@ -1,0 +1,38 @@
+# (c) Copyright IBM Corp. 2023,2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+all:
+  hosts:
+    h3n:
+      ansible_host: __ANSIBLE_TEST_HOST__
+      ansible_user: __ANSIBLE_TEST_USER__
+      ansible_port: __ANSIBLE_PORT__
+      ansible_ssh_pipelining: true
+      ZOAU: __ZOAU_PATH__
+      DFH_ZOS_PYTHON_PATH: __PYTHON_PATH__
+      DFH_REGION_CICSSVC: 216
+      DFH_LE_HLQ: CEE
+
+      DFH_REGION_SYSID: CHNG
+      DFH_REGION_APPLID: __APPLID__
+      DFH_ZFS_MOUNTPOINT: __ZFS_MOUNTPOINT__
+      USER: IBMUSER
+      DFH_CICS_HLQ: __CICS_HLQ__
+      DFH_REGION_HLQ: __REGION_HLQ__
+      DFH_CICS_LICENSE_DATA_SET: __LICENSE_DATA_SET__
+      DFH_CICS_USSHOME: __USSHOME__
+      DFH_REGION_DFLTUSER: CICSUSER
+      DFH_CPSM_HLQ: __CPSM_HLQ__
+      DFH_CMCI_PORT: 12345
+
+      z_environment_vars:
+        _BPXK_AUTOCVT: "ON"
+        ZOAU_HOME: "{{ ZOAU }}"
+        LIBPATH: "{{ ZOAU }}/lib:{{ DFH_ZOS_PYTHON_PATH }}/lib:/lib:/usr/lib:."
+        PATH: "{{ ZOAU }}/bin:{{ DFH_ZOS_PYTHON_PATH }}/bin:/bin:/var/bin"
+        _CEE_RUNOPTS: "FILETAG(AUTOCVT,AUTOTAG) POSIX(ON)"
+        _TAG_REDIR_ERR: "txt"
+        _TAG_REDIR_IN: "txt"
+        _TAG_REDIR_OUT: "txt"
+        LANG: "C"
+        PYTHONSTDINENCODING: "cp1047"
