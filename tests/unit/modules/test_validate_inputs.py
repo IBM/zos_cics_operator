@@ -23,7 +23,7 @@ default_arg_parms = {
     "dfltuser": "CICSUSER",
     "le_hlq": "CEE",
     "region_hlq": "IBMUSER.TESTRGS",
-    "pyz": "/u/ibmuser/v3r12/pyz",
+    "pyz": "/usr/lpp/IBM/cyp/v3r12/pyz",
     "sys_id": "XYZ",
     "user": "IBMUSER",
     "zfs_path": "/u/ibmuser/testrgs",

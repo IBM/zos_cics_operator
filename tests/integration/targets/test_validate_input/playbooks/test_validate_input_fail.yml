@@ -12,7 +12,7 @@
       applid: TSTMEXYZ
       zfs_path: /u/ibmuser/testrgs
       user: IBMUSER
-      pyz: /u/ibmuser/v3r12/pyz
+      pyz: /usr/lpp/IBM/cyp/v3r12/pyz
       zoau: /usr/lpp/IBM/zoautil
       dfltuser: CICSUSER
       region_hlq: IBMUSER.TESTRGS
