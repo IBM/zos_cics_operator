@@ -8,8 +8,8 @@ from ansible.module_utils import basic
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible_collections.ibm.ibm_zos_core.plugins.module_utils.zos_mvs_raw import MVSCmdResponse
 from ansible_collections.ibm.ibm_zos_cics.plugins.module_utils import _data_set_utils
-from ansible_collections.ibm.ibm_zos_cics_operator.tests.unit.helpers import validation_helper as helper
-from ansible_collections.ibm.ibm_zos_cics_operator.plugins.modules.validate_inputs import (
+from ansible_collections.ibm.zos_cics_operator.tests.unit.helpers import validation_helper as helper
+from ansible_collections.ibm.zos_cics_operator.plugins.modules.validate_inputs import (
     AnsibleValidationModule, VAR_REGEX, CICS_HLQ, LE_HLQ, SYS_ID, DFLTUSER, USER, APPLID, CICS_USSHOME, CMCI_PORT
 )
 
