@@ -102,8 +102,10 @@ jobs:
           ansible-playbook ibm.operator_collection_sdk.create_offline_requirements
           ansible-galaxy collection build ${{ env.FULL_COLLECTION_PATH }} -f --output-path ${{ env.FULL_COLLECTION_PATH }}/local/builds
           COLLECTION_BUILD=$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)
-          mv ${{ env.FULL_COLLECTION_PATH }}/local/builds/${COLLECTION_BUILD} ${{ env.FULL_COLLECTION_PATH }}/local/builds/${{ vars.COLLECTION_NAME }}-offline-${RELEASE}.tar.gz
-          echo "COLLECTION_BUILD_OFFLINE_LOCATION=${{ env.FULL_COLLECTION_PATH }}/local/builds/$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)" >> $GITHUB_ENV
+          mv ${{ env.FULL_COLLECTION_PATH }}/local/builds/${COLLECTION_BUILD} \
+            ${{ env.FULL_COLLECTION_PATH }}/local/builds/${{ vars.COLLECTION_NAME }}-offline-${RELEASE}.tar.gz
+          echo "COLLECTION_BUILD_OFFLINE_LOCATION=${{ env.FULL_COLLECTION_PATH }}/local/builds/$(ls ${{ env.FULL_COLLECTION_PATH }}/local/builds)" \
+            >> $GITHUB_ENV
         env:
           RELEASE: ${{ env.RELEASE_TAG }}
 
@@ -112,7 +114,8 @@ jobs:
           openssl genrsa -out privatekey-offline.pem 2048
           openssl rsa -in privatekey-offline.pem -out ${{ vars.COLLECTION_NAME }}-offline.pub -outform PEM -pubout
           openssl dgst -sha256 -sign privatekey-offline.pem -out ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig ${COLLECTION_BUILD_OFFLINE_LOCATION}
-          openssl dgst -sha256 -verify ${{ vars.COLLECTION_NAME }}-offline.pub -signature ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig ${COLLECTION_BUILD_OFFLINE_LOCATION}
+          openssl dgst -sha256 -verify ${{ vars.COLLECTION_NAME }}-offline.pub -signature ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig \
+            ${COLLECTION_BUILD_OFFLINE_LOCATION}
           echo "PUBLIC_KEY_OFFLINE=$(readlink -f ${{ vars.COLLECTION_NAME }}-offline.pub)" >> $GITHUB_ENV
           echo "SIGNATURE_OFFLINE=$(readlink -f ${{ vars.COLLECTION_NAME }}-${RELEASE}-offline.sig)" >> $GITHUB_ENV
         env:

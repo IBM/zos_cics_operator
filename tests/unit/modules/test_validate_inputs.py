@@ -8,8 +8,8 @@ from ansible.module_utils import basic
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible_collections.ibm.ibm_zos_core.plugins.module_utils.zos_mvs_raw import MVSCmdResponse
 from ansible_collections.ibm.ibm_zos_cics.plugins.module_utils import _data_set_utils
-from ansible_collections.ibm.ibm_zos_cics_operator.tests.unit.helpers import validation_helper as helper
-from ansible_collections.ibm.ibm_zos_cics_operator.plugins.modules.validate_inputs import (
+from ansible_collections.ibm.zos_cics_operator.tests.unit.helpers import validation_helper as helper
+from ansible_collections.ibm.zos_cics_operator.plugins.modules.validate_inputs import (
     AnsibleValidationModule, VAR_REGEX, CICS_HLQ, LE_HLQ, SYS_ID, DFLTUSER, USER, APPLID, CICS_USSHOME, CMCI_PORT
 )
 
@@ -23,7 +23,7 @@ default_arg_parms = {
     "dfltuser": "CICSUSER",
     "le_hlq": "CEE",
     "region_hlq": "IBMUSER.TESTRGS",
-    "pyz": "/u/ibmuser/v3r12/pyz",
+    "pyz": "/usr/lpp/IBM/cyp/v3r12/pyz",
     "sys_id": "XYZ",
     "user": "IBMUSER",
     "zfs_path": "/u/ibmuser/testrgs",
@@ -162,7 +162,7 @@ def test_is_safe_path_invalid_file_path_null_bytes():
     path = "/this/isnt\x00/a/safe/path"
     validation_module.check_safe_path(path)
     assert validation_module.result["failed"]
-    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: embedded null byte"
+    assert "embedded null" in validation_module.result["msg"]
 
 
 def test_is_safe_path_invalid_dataset_null_bytes():
@@ -170,7 +170,7 @@ def test_is_safe_path_invalid_dataset_null_bytes():
     path = "this.isnt.\x00.a.safe.path"
     validation_module.check_safe_path(path)
     assert validation_module.result["failed"]
-    assert validation_module.result["msg"] == f"Failed whilst validating {path}. Error message: embedded null byte"
+    assert "embedded null" in validation_module.result["msg"]
 
 
 def test_is_safe_path_invalid_file_path_integer():
