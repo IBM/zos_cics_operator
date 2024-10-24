@@ -1,3 +1,2 @@
 plugins/modules/is_job_running.py validate-modules:missing-gplv3-license # Licence is Apache-2.0
 plugins/modules/validate_inputs.py validate-modules:missing-gplv3-license # Licence is Apache-2.0
-release_os.py shebang # File isn't part of the ansible collection
