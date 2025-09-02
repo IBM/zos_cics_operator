@@ -5,10 +5,10 @@
   environment: "{{ z_environment_vars }}"
   ibm.ibm_zos_core.zos_data_set:
     name: "{{ DFH_ZFS }}"
-    type: ZFS
+    type: zfs
     space_primary: 20
     space_secondary: 5
-    space_type: CYL
+    space_type: cyl
 
 - name: Make zFS mount path directory
   environment: "{{ z_environment_vars }}"
@@ -22,8 +22,8 @@
   ibm.ibm_zos_core.zos_mount:
     src: "{{ DFH_ZFS | upper }}"
     path: "{{ DFH_ZFS_MOUNTPATH }}"
-    fs_type: ZFS
-    automove: NOAUTOMOVE
+    fs_type: zfs
+    automove: noautomove
   changed_when: true
 
 - name: Make provision directory
