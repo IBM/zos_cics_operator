@@ -15,6 +15,8 @@
           dd_name: sysin
           content:
             - " LISTC ENT('{{ DFH_REGION_DATA_SETS | upper }}.{{ data_set_name }}')"
+
+  ignore_errors: true # We assert behaviour below, so can safely ignore module error here
   register: data_set_result
 
 - name: Check data set exists

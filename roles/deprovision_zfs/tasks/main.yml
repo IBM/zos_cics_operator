@@ -38,6 +38,7 @@
             - " END"
             - " ELSE IF LASTCC = 4 THEN SET MAXCC = 0"
   register: delete_dataset_response
+  ignore_errors: true # Error handling is covered in next step, so ignore failures here
 
 - name: Log and fail
   when: >

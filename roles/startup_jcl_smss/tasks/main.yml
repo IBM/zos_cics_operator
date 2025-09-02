@@ -19,7 +19,7 @@
       environment: "{{ z_environment_vars }}"
       ibm.ibm_zos_cics.csd:
         state: changed
-        input_location: INLINE
+        input_location: inline
         input_content: |
           COPY GROUP(DFH$WU) TO(WUIGRP)
           ALTER TCPIPSERVICE(DFH$WUTC) GROUP(WUIGRP) PORT({{ DFH_CMCI_PORT }})
