@@ -8,3 +8,4 @@ tests/output
 __pycache__/
 inventories/inventory_zos.yml
 core
+.ansible
