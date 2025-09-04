@@ -130,7 +130,7 @@
         - name: Check cleanup
           ansible.builtin.assert:
             that:
-              - cleanup_result.ret_code.code <= 4
+              - cleanup_result.ret_code.code in (0,4)
 
         - name: Deprovision zFS
           ansible.builtin.include_role:
