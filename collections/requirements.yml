@@ -9,4 +9,4 @@ collections:
   - name: kubernetes.core
     version: 2.4.0
   - name: ibm.ibm_zos_cics
-    version: 2.2.0
+    version: 2.2.1

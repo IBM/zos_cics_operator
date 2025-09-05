@@ -39,7 +39,7 @@ tags: [ibm, z_os, cics, zoscb, infrastructure]
 # range specifiers can be set and are separated by ','
 dependencies: {
   "ibm.ibm_zos_core": "1.14.1",
-  "ibm.ibm_zos_cics": "2.2.0"
+  "ibm.ibm_zos_cics": "2.2.1"
 }
 
 # The URL of the originating SCM repository
