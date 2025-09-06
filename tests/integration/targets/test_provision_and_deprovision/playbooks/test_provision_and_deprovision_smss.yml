@@ -124,6 +124,13 @@
                     - " IF LASTCC = 0 THEN DO"
                     - "   DELETE {{ DFH_REGION_DATA_SETS | upper }}.DFHDMPB"
                     - " END"
+          ignore_errors: true
+          register: cleanup_result
+
+        - name: Check cleanup
+          ansible.builtin.assert:
+            that:
+              - cleanup_result.ret_code.code in (0,4)
 
         - name: Deprovision zFS
           ansible.builtin.include_role:

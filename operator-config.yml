@@ -3,7 +3,7 @@
 name: zos-cics-ts-operator
 displayName: CICS TS Operator
 domain: ibm
-version: 2.0.1
+version: 2.1.0
 description: >-
   # CICS TS Operator
     The **IBM CICS TS Operator Collection** provides automation around provisioning CICS Transaction Server for z/OS to one or more z/OS endpoints and
