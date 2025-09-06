@@ -8,4 +8,5 @@ collections:
     version: 0.5.0
   - name: kubernetes.core
     version: 2.4.0
-  - name: git+https://github.com/ansible-collections/ibm_zos_cics.git,main
+  - name: ibm.ibm_zos_cics
+    version: 2.2.1
